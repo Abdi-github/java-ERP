@@ -1,0 +1,37 @@
+# EditorConfig — https://editorconfig.org
+root = true
+
+# ── Defaults ──────────────────────────────────────────────
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# ── Java sources ──────────────────────────────────────────
+[*.java]
+indent_size = 4
+max_line_length = 120
+
+# ── Web / Config files ───────────────────────────────────
+[*.{yaml,yml,json,html,css,js,ts}]
+indent_size = 2
+
+# ── XML (Maven POM, Spring XML) ──────────────────────────
+[*.xml]
+indent_size = 4
+
+# ── Properties ────────────────────────────────────────────
+[*.properties]
+indent_size = 0
+
+# ── SQL migrations ────────────────────────────────────────
+[*.sql]
+indent_size = 2
+
+# ── Markdown ──────────────────────────────────────────────
+[*.md]
+trim_trailing_whitespace = false
+
