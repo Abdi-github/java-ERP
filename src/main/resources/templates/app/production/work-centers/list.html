@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/default}">
+<head><title th:text="#{production.workCenters}">Work Centers</title></head>
+<body><div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="#{production.workCenters}">Work Centers</h1>
+        <a th:href="@{/app/production/work-centers/new}" class="btn btn-primary">➕ <span th:text="#{common.create}">Create</span></a>
+    </div>
+    <div class="card"><div class="table-responsive"><table class="table table-hover mb-0" data-dt data-dt-paging="false"><thead><tr>
+        <th th:text="#{workCenter.code}">Code</th><th th:text="#{workCenter.name}">Name</th>
+        <th class="text-end" th:text="#{workCenter.capacity}">Capacity/Day</th><th class="text-end">CHF/h</th><th>Status</th><th th:text="#{common.actions}">Actions</th>
+    </tr></thead><tbody>
+    <tr th:each="w : ${workCenters.content}">
+        <td><a th:href="@{/app/production/work-centers/{id}(id=${w.id()})}" th:text="${w.code()}" class="fw-bold text-decoration-none"></a></td>
+        <td th:text="${w.name()}"></td>
+        <td class="text-end" th:text="${#numbers.formatDecimal(w.capacityPerDay(), 1, 2)}"></td>
+        <td class="text-end" th:text="'CHF ' + ${#numbers.formatDecimal(w.costPerHour(), 1, 2)}"></td>
+        <td><span th:if="${w.active()}" class="badge bg-success">Active</span><span th:unless="${w.active()}" class="badge bg-secondary">Inactive</span></td>
+        <td><a th:href="@{/app/production/work-centers/{id}/edit(id=${w.id()})}" class="btn btn-sm btn-outline-primary" th:text="#{common.edit}">Edit</a></td>
+    </tr>
+    <tr th:if="${workCenters.content.isEmpty()}"><td colspan="6" class="text-center text-muted py-4" th:text="#{common.noResults}">No results</td></tr>
+    </tbody></table></div></div>
+</div></body></html>
+

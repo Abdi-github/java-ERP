@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/default}">
+<head><title th:text="${order.orderNumber()}">Production Order</title></head>
+<body><div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><h1 th:text="${order.orderNumber()}">MO-2026-00001</h1>
+            <span class="badge fs-6" th:classappend="${order.status().name() == 'PLANNED' ? 'bg-secondary' : order.status().name() == 'RELEASED' ? 'bg-primary' : order.status().name() == 'IN_PROGRESS' ? 'bg-warning text-dark' : order.status().name() == 'ON_HOLD' ? 'bg-info' : order.status().name() == 'COMPLETED' ? 'bg-success' : 'bg-danger'}" th:text="${order.status()}"></span></div>
+        <div class="d-flex gap-2">
+            <form th:if="${order.status().name() == 'PLANNED'}" th:action="@{/app/production/orders/{id}/release(id=${order.id()})}" method="post" class="d-inline"><button type="submit" class="btn btn-primary">🚀 Release</button></form>
+            <form th:if="${order.status().name() == 'RELEASED'}" th:action="@{/app/production/orders/{id}/start(id=${order.id()})}" method="post" class="d-inline"><button type="submit" class="btn btn-warning">▶ Start</button></form>
+            <form th:if="${order.status().name() == 'IN_PROGRESS'}" th:action="@{/app/production/orders/{id}/complete(id=${order.id()})}" method="post" class="d-inline"><button type="submit" class="btn btn-success">✓ Complete</button></form>
+            <form th:if="${order.status().name() == 'IN_PROGRESS'}" th:action="@{/app/production/orders/{id}/hold(id=${order.id()})}" method="post" class="d-inline"><button type="submit" class="btn btn-info">⏸ Hold</button></form>
+            <form th:if="${order.status().name() == 'ON_HOLD'}" th:action="@{/app/production/orders/{id}/resume(id=${order.id()})}" method="post" class="d-inline"><button type="submit" class="btn btn-warning">▶ Resume</button></form>
+            <form th:if="${order.status().name() != 'COMPLETED' and order.status().name() != 'CANCELLED'}" th:action="@{/app/production/orders/{id}/cancel(id=${order.id()})}" method="post" class="d-inline" onsubmit="return confirm('Cancel?');"><button type="submit" class="btn btn-outline-danger">✖ Cancel</button></form>
+            <a th:if="${order.status().name() == 'PLANNED'}" th:href="@{/app/production/orders/{id}/edit(id=${order.id()})}" class="btn btn-outline-primary" th:text="#{common.edit}">Edit</a>
+            <a th:href="@{/app/production/orders}" class="btn btn-outline-secondary" th:text="#{common.back}">Back</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6"><div class="card mb-4"><div class="card-header fw-bold">Order Info</div><div class="card-body"><dl class="row mb-0">
+            <dt class="col-sm-5">Product</dt><dd class="col-sm-7" th:text="${order.productName()}"></dd>
+            <dt class="col-sm-5">Work Center</dt><dd class="col-sm-7" th:text="${order.workCenterName()} ?: '—'"></dd>
+            <dt class="col-sm-5">Priority</dt><dd class="col-sm-7" th:text="${order.priority()}"></dd>
+            <dt class="col-sm-5">Planned Start</dt><dd class="col-sm-7" th:text="${order.plannedStartDate()} ?: '—'"></dd>
+            <dt class="col-sm-5">Planned End</dt><dd class="col-sm-7" th:text="${order.plannedEndDate()} ?: '—'"></dd>
+            <dt class="col-sm-5">Actual Start</dt><dd class="col-sm-7" th:text="${order.actualStartDate()} ?: '—'"></dd>
+            <dt class="col-sm-5">Actual End</dt><dd class="col-sm-7" th:text="${order.actualEndDate()} ?: '—'"></dd>
+        </dl></div></div></div>
+        <div class="col-md-6"><div class="card mb-4"><div class="card-header fw-bold">Quantities & Cost</div><div class="card-body"><dl class="row mb-0">
+            <dt class="col-sm-5">Planned Qty</dt><dd class="col-sm-7" th:text="${#numbers.formatDecimal(order.plannedQuantity(), 1, 2)}"></dd>
+            <dt class="col-sm-5">Completed Qty</dt><dd class="col-sm-7" th:text="${#numbers.formatDecimal(order.completedQuantity(), 1, 2)}"></dd>
+            <dt class="col-sm-5">Scrap Qty</dt><dd class="col-sm-7" th:text="${#numbers.formatDecimal(order.scrapQuantity(), 1, 2)}"></dd>
+            <dt class="col-sm-5">Estimated Cost</dt><dd class="col-sm-7" th:text="'CHF ' + ${#numbers.formatDecimal(order.estimatedCost(), 1, 2)}"></dd>
+            <dt class="col-sm-5">Actual Cost</dt><dd class="col-sm-7" th:text="'CHF ' + ${#numbers.formatDecimal(order.actualCost(), 1, 2)}"></dd>
+        </dl></div></div></div>
+    </div>
+    <div class="card mb-4"><div class="card-header fw-bold">Material Lines</div><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr>
+        <th>#</th><th>Material</th><th>Description</th><th class="text-end">Planned Qty</th><th class="text-end">Actual Qty</th><th class="text-end">Unit Price</th><th class="text-end">Cost</th>
+    </tr></thead><tbody>
+    <tr th:each="l : ${order.lines()}">
+        <td th:text="${l.position()}"></td><td th:text="${l.materialName()}"></td><td th:text="${l.description()} ?: '—'"></td>
+        <td class="text-end" th:text="${#numbers.formatDecimal(l.plannedQuantity(), 1, 2)}"></td>
+        <td class="text-end" th:text="${#numbers.formatDecimal(l.actualQuantity(), 1, 2)}"></td>
+        <td class="text-end" th:text="'CHF ' + ${#numbers.formatDecimal(l.unitPrice(), 1, 2)}"></td>
+        <td class="text-end fw-bold" th:text="'CHF ' + ${#numbers.formatDecimal(l.lineCost(), 1, 2)}"></td>
+    </tr>
+    <tr th:if="${order.lines().isEmpty()}"><td colspan="7" class="text-center text-muted py-3">No material lines</td></tr>
+    </tbody></table></div></div>
+    <div class="card mb-4" th:if="${order.notes() != null and !order.notes().isBlank()}"><div class="card-header fw-bold">Notes</div><div class="card-body" th:text="${order.notes()}"></div></div>
+</div></body></html>
+

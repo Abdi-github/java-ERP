@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title th:text="${supplier.displayName()}">Supplier Detail</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="${supplier.displayName()}">Supplier</h1>
+        <div>
+            <a th:href="@{/app/purchasing/suppliers/{id}/edit(id=${supplier.id()})}" class="btn btn-outline-primary" th:text="#{common.edit}">Edit</a>
+            <a th:href="@{/app/purchasing/suppliers}" class="btn btn-outline-secondary" th:text="#{common.back}">Back</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6"><div class="card mb-4"><div class="card-header fw-bold">Supplier Information</div><div class="card-body"><dl class="row mb-0">
+            <dt class="col-sm-4">Nr.</dt><dd class="col-sm-8" th:text="${supplier.supplierNumber()}"></dd>
+            <dt class="col-sm-4">Company</dt><dd class="col-sm-8" th:text="${supplier.companyName()} ?: '—'"></dd>
+            <dt class="col-sm-4">Contact</dt><dd class="col-sm-8" th:text="${supplier.contactPerson()} ?: '—'"></dd>
+            <dt class="col-sm-4">E-Mail</dt><dd class="col-sm-8" th:text="${supplier.email()} ?: '—'"></dd>
+            <dt class="col-sm-4">Phone</dt><dd class="col-sm-8" th:text="${supplier.phone()} ?: '—'"></dd>
+            <dt class="col-sm-4">Website</dt><dd class="col-sm-8" th:text="${supplier.website()} ?: '—'"></dd>
+            <dt class="col-sm-4">VAT Nr.</dt><dd class="col-sm-8" th:text="${supplier.vatNumber()} ?: '—'"></dd>
+            <dt class="col-sm-4">Status</dt><dd class="col-sm-8">
+                <span th:if="${supplier.active()}" class="badge bg-success">Active</span>
+                <span th:unless="${supplier.active()}" class="badge bg-secondary">Inactive</span></dd>
+        </dl></div></div></div>
+        <div class="col-md-6"><div class="card mb-4"><div class="card-header fw-bold">Address & Terms</div><div class="card-body"><dl class="row mb-0">
+            <dt class="col-sm-4">Street</dt><dd class="col-sm-8" th:text="${supplier.street()} ?: '—'"></dd>
+            <dt class="col-sm-4">City</dt><dd class="col-sm-8" th:text="${(supplier.postalCode() ?: '') + ' ' + (supplier.city() ?: '')}"></dd>
+            <dt class="col-sm-4">Canton</dt><dd class="col-sm-8" th:text="${supplier.canton()} ?: '—'"></dd>
+            <dt class="col-sm-4">Country</dt><dd class="col-sm-8" th:text="${supplier.country()}"></dd>
+            <dt class="col-sm-4">Payment Terms</dt><dd class="col-sm-8" th:text="${supplier.paymentTerms() + ' days'}"></dd>
+        </dl></div></div></div>
+    </div>
+    <div class="card border-danger"><div class="card-header bg-danger text-white fw-bold">Danger Zone</div><div class="card-body">
+        <form th:action="@{/app/purchasing/suppliers/{id}/delete(id=${supplier.id()})}" method="post" onsubmit="return confirm('Delete this supplier?');">
+            <button type="submit" class="btn btn-outline-danger" th:text="#{common.delete}">Delete</button>
+        </form>
+    </div></div>
+</div>
+</body></html>
+

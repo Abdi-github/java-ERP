@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/default}">
+<head><title>Employees</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="#{hr.employees}">Employees</h1>
+        <a th:href="@{/app/hr/employees/new}" class="btn btn-primary">➕ <span th:text="#{common.create}">Create</span></a>
+    </div>
+    <form class="row g-3 mb-4" th:action="@{/app/hr/employees}" method="get">
+        <div class="col-md-6"><div class="input-group">
+            <input type="text" name="search" class="form-control" th:placeholder="#{common.search}" th:value="${search}"/>
+            <button class="btn btn-outline-secondary" type="submit" th:text="#{common.search}">Search</button>
+        </div></div>
+    </form>
+    <div class="card"><div class="table-responsive"><table class="table table-hover mb-0" data-dt data-dt-paging="false">
+        <thead><tr><th>#</th><th>Name</th><th>Department</th><th>Position</th><th>Status</th><th th:text="#{common.actions}">Actions</th></tr></thead>
+        <tbody>
+        <tr th:each="emp : ${employees.content}">
+            <td><a th:href="@{/app/hr/employees/{id}(id=${emp.id()})}" th:text="${emp.employeeNumber()}" class="fw-bold text-decoration-none"></a></td>
+            <td th:text="${emp.fullName()}"></td>
+            <td th:text="${emp.departmentName()} ?: '—'"></td>
+            <td th:text="${emp.position()} ?: '—'"></td>
+            <td><span th:if="${emp.active()}" class="badge bg-success">Active</span><span th:unless="${emp.active()}" class="badge bg-secondary">Inactive</span></td>
+            <td><a th:href="@{/app/hr/employees/{id}/edit(id=${emp.id()})}" class="btn btn-sm btn-outline-primary" th:text="#{common.edit}">Edit</a></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(employees.content)}"><td colspan="6" class="text-center text-muted" th:text="#{common.noResults}">No results</td></tr>
+        </tbody>
+    </table></div></div>
+</div>
+</body></html>

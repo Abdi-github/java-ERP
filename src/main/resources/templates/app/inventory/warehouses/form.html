@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="${editMode} ? 'Lager bearbeiten' : 'Neues Lager'">Warehouse Form</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <h1 th:text="${editMode} ? 'Lager bearbeiten' : 'Neues Lager erstellen'">Warehouse Form</h1>
+
+    <form th:action="${editMode} ? @{/app/inventory/warehouses/{id}(id=${warehouseId})} : @{/app/inventory/warehouses}"
+          th:object="${warehouseRequest}" method="post" class="mt-4" style="max-width: 700px;">
+
+        <div class="mb-3">
+            <label for="code" class="form-label">Code *</label>
+            <input type="text" id="code" th:field="*{code}" class="form-control"
+                   th:classappend="${#fields.hasErrors('code')} ? 'is-invalid'" required/>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('code')}" th:errors="*{code}">Error</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="name" class="form-label">Name *</label>
+            <input type="text" id="name" th:field="*{name}" class="form-control"
+                   th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'" required/>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Error</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Beschreibung</label>
+            <textarea id="description" th:field="*{description}" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="address" class="form-label">Adresse</label>
+            <textarea id="address" th:field="*{address}" class="form-control" rows="2"></textarea>
+        </div>
+
+        <div class="mb-3 form-check">
+            <input type="checkbox" id="active" th:field="*{active}" class="form-check-input"/>
+            <label for="active" class="form-check-label">Aktiv</label>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+            <a th:href="@{/app/inventory/warehouses}" class="btn btn-secondary" th:text="#{common.cancel}">Cancel</a>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>
+

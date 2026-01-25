@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="${editMode} ? 'Edit Category' : 'New Category'">Category Form</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/app/masterdata/categories}">Categories</a></li>
+            <li class="breadcrumb-item active" th:text="${editMode} ? 'Edit' : 'New'">Form</li>
+        </ol>
+    </nav>
+
+    <h1 th:text="${editMode} ? 'Edit Category' : 'New Category'">Category Form</h1>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <form th:action="${editMode} ? @{/app/masterdata/categories/{id}(id=${categoryId})} : @{/app/masterdata/categories}"
+                  method="post" th:object="${categoryRequest}">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="name" class="form-label">Name *</label>
+                        <input type="text" id="name" th:field="*{name}"
+                               class="form-control" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"/>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="parentId" class="form-label">Parent Category</label>
+                        <select id="parentId" th:field="*{parentId}" class="form-select">
+                            <option value="">— None (root) —</option>
+                            <option th:each="cat : ${parentCategories}"
+                                    th:value="${cat.id()}"
+                                    th:text="${cat.name()}"
+                                    th:if="${!editMode || !cat.id().equals(categoryId)}"></option>
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea id="description" th:field="*{description}" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+                    <a th:href="@{/app/masterdata/categories}" class="btn btn-outline-secondary" th:text="#{common.cancel}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+

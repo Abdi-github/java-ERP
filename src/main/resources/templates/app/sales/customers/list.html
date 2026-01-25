@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>Kunden</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="#{sales.customers}">Customers</h1>
+        <a th:href="@{/app/sales/customers/new}" class="btn btn-primary">
+            ➕ <span th:text="#{common.create}">Create</span>
+        </a>
+    </div>
+
+    <!-- Search -->
+    <form class="row g-3 mb-4" th:action="@{/app/sales/customers}" method="get">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control"
+                       th:placeholder="#{common.search}" th:value="${search}"/>
+                <button class="btn btn-outline-secondary" type="submit" th:text="#{common.search}">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Customers Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" data-dt data-dt-paging="false">
+                <thead>
+                <tr>
+                    <th>Nr.</th>
+                    <th th:text="#{customer.name}">Name</th>
+                    <th>E-Mail</th>
+                    <th th:text="#{customer.city}">City</th>
+                    <th th:text="#{customer.canton}">Canton</th>
+                    <th>Status</th>
+                    <th th:text="#{common.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${customers.content}">
+                    <td>
+                        <a th:href="@{/app/sales/customers/{id}(id=${c.id()})}"
+                           th:text="${c.customerNumber()}" class="fw-bold text-decoration-none"></a>
+                    </td>
+                    <td th:text="${c.displayName()}"></td>
+                    <td th:text="${c.email()} ?: '—'"></td>
+                    <td th:text="${c.city()} ?: '—'"></td>
+                    <td th:text="${c.canton()} ?: '—'"></td>
+                    <td>
+                        <span th:if="${c.active()}" class="badge bg-success">Active</span>
+                        <span th:unless="${c.active()}" class="badge bg-secondary">Inactive</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/app/sales/customers/{id}/edit(id=${c.id()})}"
+                           class="btn btn-sm btn-outline-primary" th:text="#{common.edit}">Edit</a>
+                    </td>
+                </tr>
+                <tr th:if="${customers.content.isEmpty()}">
+                    <td colspan="7" class="text-center text-muted py-4" th:text="#{common.noResults}">
+                        No results found
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer d-flex justify-content-between align-items-center" th:if="${customers.totalPages > 1}">
+            <span th:text="|Page ${customers.number + 1} of ${customers.totalPages}|"></span>
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${customers.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/sales/customers(page=${customers.number - 1}, search=${search})}">‹</a>
+                    </li>
+                    <li class="page-item" th:classappend="${customers.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/sales/customers(page=${customers.number + 1}, search=${search})}">›</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

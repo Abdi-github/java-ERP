@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>Neue Lagerbewegung</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <h1>Neue Lagerbewegung erfassen</h1>
+
+    <form th:action="@{/app/inventory/stock/movements}"
+          th:object="${movementRequest}" method="post" class="mt-4" style="max-width: 700px;">
+
+        <div class="mb-3">
+            <label for="movementType" class="form-label">Bewegungsart *</label>
+            <select id="movementType" th:field="*{movementType}" class="form-select" required>
+                <option value="">— Auswählen —</option>
+                <option th:each="mt : ${movementTypes}" th:value="${mt}" th:text="${mt}">GOODS_RECEIPT</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="itemType" class="form-label">Artikel-Typ *</label>
+            <select id="itemType" th:field="*{itemType}" class="form-select" required>
+                <option value="">— Auswählen —</option>
+                <option th:each="it : ${itemTypes}" th:value="${it}" th:text="${it}">PRODUCT</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="itemId" class="form-label">Artikel-ID *</label>
+            <input type="text" id="itemId" th:field="*{itemId}" class="form-control"
+                   placeholder="UUID des Artikels" required/>
+        </div>
+
+        <div class="mb-3">
+            <label for="sourceWarehouseId" class="form-label">Quell-Lager</label>
+            <select id="sourceWarehouseId" th:field="*{sourceWarehouseId}" class="form-select">
+                <option value="">— Kein Quell-Lager —</option>
+                <option th:each="w : ${warehouses}" th:value="${w.id()}"
+                        th:text="${w.code() + ' — ' + w.name()}">WH-01</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="targetWarehouseId" class="form-label">Ziel-Lager</label>
+            <select id="targetWarehouseId" th:field="*{targetWarehouseId}" class="form-select">
+                <option value="">— Kein Ziel-Lager —</option>
+                <option th:each="w : ${warehouses}" th:value="${w.id()}"
+                        th:text="${w.code() + ' — ' + w.name()}">WH-01</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="quantity" class="form-label">Menge *</label>
+            <input type="number" id="quantity" th:field="*{quantity}" class="form-control"
+                   step="0.0001" min="0.0001" required/>
+        </div>
+
+        <div class="mb-3">
+            <label for="reason" class="form-label">Grund</label>
+            <textarea id="reason" th:field="*{reason}" class="form-control" rows="2"
+                      maxlength="500"></textarea>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+            <a th:href="@{/app/inventory/stock/movements}" class="btn btn-secondary"
+               th:text="#{common.cancel}">Cancel</a>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>
+

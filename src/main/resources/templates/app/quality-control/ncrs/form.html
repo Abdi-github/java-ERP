@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title>New Non-Conformance Report</title></head>
+<body>
+<div layout:fragment="content">
+    <h1>New Non-Conformance Report</h1>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <form th:action="@{/app/quality-control/ncrs}" th:object="${ncrRequest}" method="post"
+                  style="max-width: 700px;">
+                <div class="mb-3">
+                    <label class="form-label">Quality Check *</label>
+                    <input type="text" class="form-control" th:field="*{qualityCheckId}"
+                           th:classappend="${#fields.hasErrors('qualityCheckId')} ? 'is-invalid'"
+                           placeholder="Quality Check UUID"/>
+                    <div class="invalid-feedback" th:errors="*{qualityCheckId}"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Severity *</label>
+                    <select class="form-select" th:field="*{severity}"
+                            th:classappend="${#fields.hasErrors('severity')} ? 'is-invalid'">
+                        <option value="">-- Select --</option>
+                        <option th:each="s : ${severities}" th:value="${s}" th:text="${s}"></option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{severity}"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description *</label>
+                    <textarea class="form-control" th:field="*{description}" rows="4"
+                              th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'"></textarea>
+                    <div class="invalid-feedback" th:errors="*{description}"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Corrective Action</label>
+                    <textarea class="form-control" th:field="*{correctiveAction}" rows="3"></textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+                    <a th:href="@{/app/quality-control/ncrs}" class="btn btn-secondary" th:text="#{common.cancel}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

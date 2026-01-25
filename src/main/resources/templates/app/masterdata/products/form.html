@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="${editMode} ? 'Edit Product' : 'New Product'">Product Form</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/app/masterdata/products}" th:text="#{nav.products}">Products</a></li>
+            <li class="breadcrumb-item active" th:text="${editMode} ? 'Edit' : 'New'">Form</li>
+        </ol>
+    </nav>
+
+    <h1 th:text="${editMode} ? 'Edit Product' : 'New Product'">Product Form</h1>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <form th:action="${editMode} ? @{/app/masterdata/products/{id}(id=${productId})} : @{/app/masterdata/products}"
+                  method="post" th:object="${productRequest}">
+
+                <div class="row g-3">
+                    <!-- SKU -->
+                    <div class="col-md-4">
+                        <label for="sku" class="form-label">SKU *</label>
+                        <input type="text" id="sku" th:field="*{sku}"
+                               class="form-control" th:classappend="${#fields.hasErrors('sku')} ? 'is-invalid'"
+                               placeholder="e.g., SW-LUNA-001"/>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('sku')}" th:errors="*{sku}"></div>
+                    </div>
+
+                    <!-- Name -->
+                    <div class="col-md-8">
+                        <label for="name" class="form-label" th:text="#{product.name} + ' *'">Name *</label>
+                        <input type="text" id="name" th:field="*{name}"
+                               class="form-control" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                               placeholder="e.g., Luna Automatic 40mm"/>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="col-12">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea id="description" th:field="*{description}" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-6">
+                        <label for="categoryId" class="form-label" th:text="#{product.category}">Category</label>
+                        <select id="categoryId" th:field="*{categoryId}" class="form-select">
+                            <option value="">— None —</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.id()}"
+                                    th:text="${cat.name()}"></option>
+                        </select>
+                    </div>
+
+                    <!-- VAT Rate -->
+                    <div class="col-md-6">
+                        <label for="vatRate" class="form-label" th:text="#{product.vat} + ' *'">VAT Rate *</label>
+                        <select id="vatRate" th:field="*{vatRate}" class="form-select"
+                                th:classappend="${#fields.hasErrors('vatRate')} ? 'is-invalid'">
+                            <option value="">— Select —</option>
+                            <option th:each="vat : ${vatRates}"
+                                    th:value="${vat}"
+                                    th:text="${vat.name() + ' (' + vat.rate + '%)'}"
+                            ></option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('vatRate')}" th:errors="*{vatRate}"></div>
+                    </div>
+
+                    <!-- Unit Price -->
+                    <div class="col-md-4">
+                        <label for="unitPrice" class="form-label" th:text="#{product.unitPrice} + ' (CHF) *'">Unit Price *</label>
+                        <input type="number" id="unitPrice" th:field="*{unitPrice}" step="0.01" min="0"
+                               class="form-control" th:classappend="${#fields.hasErrors('unitPrice')} ? 'is-invalid'"/>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('unitPrice')}" th:errors="*{unitPrice}"></div>
+                    </div>
+
+                    <!-- List Price -->
+                    <div class="col-md-4">
+                        <label for="listPrice" class="form-label" th:text="#{product.listPrice} + ' (CHF) *'">List Price *</label>
+                        <input type="number" id="listPrice" th:field="*{listPrice}" step="0.01" min="0"
+                               class="form-control" th:classappend="${#fields.hasErrors('listPrice')} ? 'is-invalid'"/>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('listPrice')}" th:errors="*{listPrice}"></div>
+                    </div>
+
+                    <!-- Active -->
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check">
+                            <input type="checkbox" id="active" th:field="*{active}" class="form-check-input"/>
+                            <label for="active" class="form-check-label">Active</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+                    <a th:href="@{/app/masterdata/products}" class="btn btn-outline-secondary" th:text="#{common.cancel}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+

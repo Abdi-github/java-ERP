@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="${campaign.name()}">Kampagne Detail</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-megaphone"></i>
+            <span th:text="${campaign.name()}">Kampagne</span>
+            <span class="badge ms-2"
+                  th:classappend="${campaign.status().name() == 'DRAFT'} ? 'bg-secondary' :
+                                  ${campaign.status().name() == 'QUEUED'} ? 'bg-warning text-dark' :
+                                  ${campaign.status().name() == 'RUNNING'} ? 'bg-info' :
+                                  ${campaign.status().name() == 'COMPLETED'} ? 'bg-success' :
+                                  ${campaign.status().name() == 'FAILED'} ? 'bg-danger' : 'bg-dark'"
+                  th:text="${campaign.status()}">STATUS</span>
+        </h2>
+        <a th:href="@{/app/admin/mail-campaigns}" class="btn btn-outline-secondary" th:text="#{common.back}">Zurück</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-header" th:text="#{campaign.details}">Kampagnendetails</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4" th:text="#{campaign.name}">Name</dt>
+                        <dd class="col-sm-8" th:text="${campaign.name()}">—</dd>
+
+                        <dt class="col-sm-4" th:text="#{campaign.template}">Template</dt>
+                        <dd class="col-sm-8"><code th:text="${campaign.templateCode()}">—</code></dd>
+
+                        <dt class="col-sm-4" th:text="#{campaign.segment}">Zielgruppe</dt>
+                        <dd class="col-sm-8" th:text="${campaign.targetSegment()}">ALL_USERS</dd>
+
+                        <dt class="col-sm-4">Locale</dt>
+                        <dd class="col-sm-8" th:text="${campaign.locale()}">de</dd>
+
+                        <dt class="col-sm-4" th:if="${campaign.subjectOverride()}" th:text="#{campaign.subjectOverride}">Betreff</dt>
+                        <dd class="col-sm-8" th:if="${campaign.subjectOverride()}" th:text="${campaign.subjectOverride()}">—</dd>
+
+                        <dt class="col-sm-4" th:if="${campaign.description()}" th:text="#{campaign.description}">Beschreibung</dt>
+                        <dd class="col-sm-8" th:if="${campaign.description()}" th:text="${campaign.description()}">—</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header" th:text="#{campaign.progress}">Fortschritt</div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col">
+                            <h3 th:text="${campaign.totalRecipients()}">0</h3>
+                            <small class="text-muted" th:text="#{campaign.totalRecipients}">Empfänger</small>
+                        </div>
+                        <div class="col">
+                            <h3 class="text-success" th:text="${campaign.sentCount()}">0</h3>
+                            <small class="text-muted" th:text="#{campaign.sent}">Gesendet</small>
+                        </div>
+                        <div class="col">
+                            <h3 class="text-danger" th:text="${campaign.failedCount()}">0</h3>
+                            <small class="text-muted" th:text="#{campaign.failed}">Fehlgeschlagen</small>
+                        </div>
+                    </div>
+                    <div class="progress mt-3" th:if="${campaign.totalRecipients() > 0}">
+                        <div class="progress-bar bg-success"
+                             th:style="'width: ' + ${campaign.sentCount() * 100 / campaign.totalRecipients()} + '%'"
+                             th:text="${campaign.sentCount()}">0</div>
+                        <div class="progress-bar bg-danger"
+                             th:style="'width: ' + ${campaign.failedCount() * 100 / campaign.totalRecipients()} + '%'"
+                             th:text="${campaign.failedCount()}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header" th:text="#{campaign.timeline}">Zeitverlauf</div>
+                <div class="card-body">
+                    <dl class="mb-0">
+                        <dt th:text="#{campaign.createdAt}">Erstellt</dt>
+                        <dd th:text="${campaign.createdAt() != null ? #temporals.format(campaign.createdAt(), 'dd.MM.yyyy HH:mm') : '—'}">—</dd>
+
+                        <dt th:text="#{campaign.scheduledAt}">Geplant</dt>
+                        <dd th:text="${campaign.scheduledAt() != null ? #temporals.format(campaign.scheduledAt(), 'dd.MM.yyyy HH:mm') : '—'}">—</dd>
+
+                        <dt th:text="#{campaign.startedAt}">Gestartet</dt>
+                        <dd th:text="${campaign.startedAt() != null ? #temporals.format(campaign.startedAt(), 'dd.MM.yyyy HH:mm') : '—'}">—</dd>
+
+                        <dt th:text="#{campaign.completedAt}">Abgeschlossen</dt>
+                        <dd th:text="${campaign.completedAt() != null ? #temporals.format(campaign.completedAt(), 'dd.MM.yyyy HH:mm') : '—'}">—</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header" th:text="#{common.actions}">Aktionen</div>
+                <div class="card-body d-grid gap-2">
+                    <form th:if="${campaign.status().name() == 'DRAFT'}"
+                          th:action="@{/app/admin/mail-campaigns/{id}/queue(id=${campaign.id()})}" method="post">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-send"></i>
+                            <span th:text="#{campaign.queue}">Zur Versendung freigeben</span>
+                        </button>
+                    </form>
+                    <form th:if="${campaign.status().name() == 'DRAFT' || campaign.status().name() == 'QUEUED'}"
+                          th:action="@{/app/admin/mail-campaigns/{id}/cancel(id=${campaign.id()})}" method="post">
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-x-circle"></i>
+                            <span th:text="#{campaign.cancel}">Abbrechen</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

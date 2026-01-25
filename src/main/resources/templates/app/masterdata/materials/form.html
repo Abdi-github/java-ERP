@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="${editMode} ? 'Edit Material' : 'New Material'">Material Form</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/app/masterdata/materials}">Materials</a></li>
+            <li class="breadcrumb-item active" th:text="${editMode} ? 'Edit' : 'New'">Form</li>
+        </ol>
+    </nav>
+
+    <h1 th:text="${editMode} ? 'Edit Material' : 'New Material'">Material Form</h1>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <form th:action="${editMode} ? @{/app/masterdata/materials/{id}(id=${materialId})} : @{/app/masterdata/materials}"
+                  method="post" th:object="${materialRequest}">
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="sku" class="form-label">SKU *</label>
+                        <input type="text" id="sku" th:field="*{sku}"
+                               class="form-control" th:classappend="${#fields.hasErrors('sku')} ? 'is-invalid'"
+                               placeholder="e.g., MAT-MOV-001"/>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('sku')}" th:errors="*{sku}"></div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label for="name" class="form-label">Name *</label>
+                        <input type="text" id="name" th:field="*{name}"
+                               class="form-control" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                               placeholder="e.g., ETA 2824-2 Movement"/>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea id="description" th:field="*{description}" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="categoryId" class="form-label">Category</label>
+                        <select id="categoryId" th:field="*{categoryId}" class="form-select">
+                            <option value="">— None —</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.id()}"
+                                    th:text="${cat.name()}"></option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="unitOfMeasureId" class="form-label">Unit of Measure</label>
+                        <select id="unitOfMeasureId" th:field="*{unitOfMeasureId}" class="form-select">
+                            <option value="">— None —</option>
+                            <option th:each="uom : ${unitsOfMeasure}"
+                                    th:value="${uom.id()}"
+                                    th:text="${uom.code() + ' — ' + uom.name()}"></option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="vatRate" class="form-label">VAT Rate *</label>
+                        <select id="vatRate" th:field="*{vatRate}" class="form-select"
+                                th:classappend="${#fields.hasErrors('vatRate')} ? 'is-invalid'">
+                            <option value="">— Select —</option>
+                            <option th:each="vat : ${vatRates}"
+                                    th:value="${vat}"
+                                    th:text="${vat.name() + ' (' + vat.rate + '%)'}"
+                            ></option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('vatRate')}" th:errors="*{vatRate}"></div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="unitPrice" class="form-label">Unit Price (CHF) *</label>
+                        <input type="number" id="unitPrice" th:field="*{unitPrice}" step="0.01" min="0"
+                               class="form-control" th:classappend="${#fields.hasErrors('unitPrice')} ? 'is-invalid'"/>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('unitPrice')}" th:errors="*{unitPrice}"></div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="minimumStock" class="form-label">Minimum Stock *</label>
+                        <input type="number" id="minimumStock" th:field="*{minimumStock}" step="0.01" min="0"
+                               class="form-control" th:classappend="${#fields.hasErrors('minimumStock')} ? 'is-invalid'"/>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('minimumStock')}" th:errors="*{minimumStock}"></div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+                    <a th:href="@{/app/masterdata/materials}" class="btn btn-outline-secondary" th:text="#{common.cancel}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+

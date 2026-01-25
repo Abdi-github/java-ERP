@@ -1,0 +1,23 @@
+<!-- Reusable delete confirmation modal — triggers via HTMX or standard form -->
+<div xmlns:th="http://www.thymeleaf.org">
+    <div th:fragment="deleteModal(entityName, deleteUrl)" class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="#{common.confirm}">Confirm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this <span th:text="${entityName}">item</span>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{common.cancel}">Cancel</button>
+                    <form th:action="${deleteUrl}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger" th:text="#{common.delete}">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

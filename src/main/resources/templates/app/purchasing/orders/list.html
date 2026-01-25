@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title th:text="#{purchasing.orders}">Purchase Orders</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="#{purchasing.orders}">Purchase Orders</h1>
+        <a th:href="@{/app/purchasing/orders/new}" class="btn btn-primary">➕ <span th:text="#{common.create}">Create</span></a>
+    </div>
+    <form class="row g-3 mb-4" th:action="@{/app/purchasing/orders}" method="get">
+        <div class="col-md-4"><div class="input-group">
+            <input type="text" name="search" class="form-control" th:placeholder="#{common.search}" th:value="${search}"/>
+            <button class="btn btn-outline-secondary" type="submit" th:text="#{common.search}">Search</button>
+        </div></div>
+        <div class="col-md-3"><select name="status" class="form-select" onchange="this.form.submit()">
+            <option value="">— All statuses —</option>
+            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}" th:selected="${s == selectedStatus}"></option>
+        </select></div>
+    </form>
+    <div class="card"><div class="table-responsive">
+        <table class="table table-hover mb-0" data-dt data-dt-paging="false"><thead><tr>
+            <th>Order Nr.</th><th>Supplier</th><th>Date</th><th>Status</th><th class="text-end">Total (CHF)</th><th th:text="#{common.actions}">Actions</th>
+        </tr></thead><tbody>
+        <tr th:each="o : ${orders.content}">
+            <td><a th:href="@{/app/purchasing/orders/{id}(id=${o.id()})}" th:text="${o.orderNumber()}" class="fw-bold text-decoration-none"></a></td>
+            <td th:text="${o.supplierName()}"></td>
+            <td th:text="${o.orderDate()}"></td>
+            <td><span class="badge" th:classappend="${o.status().name() == 'DRAFT' ? 'bg-secondary' : o.status().name() == 'SUBMITTED' ? 'bg-primary' : o.status().name() == 'ORDERED' ? 'bg-primary' : o.status().name() == 'CONFIRMED' ? 'bg-info' : o.status().name() == 'PARTIALLY_RECEIVED' ? 'bg-warning text-dark' : o.status().name() == 'RECEIVED' ? 'bg-success' : o.status().name() == 'COMPLETED' ? 'bg-dark' : 'bg-danger'}" th:text="${o.status()}"></span></td>
+            <td class="text-end" th:text="'CHF ' + ${#numbers.formatDecimal(o.totalAmount(), 1, 2)}"></td>
+            <td><a th:href="@{/app/purchasing/orders/{id}(id=${o.id()})}" class="btn btn-sm btn-outline-primary">View</a></td>
+        </tr>
+        <tr th:if="${orders.content.isEmpty()}"><td colspan="6" class="text-center text-muted py-4" th:text="#{common.noResults}">No results</td></tr>
+        </tbody></table>
+    </div></div>
+</div>
+</body></html>
+

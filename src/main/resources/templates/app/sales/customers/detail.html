@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="${customer.displayName()}">Customer Detail</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="${customer.displayName()}">Customer Name</h1>
+        <div>
+            <a th:href="@{/app/sales/customers/{id}/edit(id=${customer.id()})}"
+               class="btn btn-outline-primary" th:text="#{common.edit}">Edit</a>
+            <a th:href="@{/app/sales/customers}" class="btn btn-outline-secondary" th:text="#{common.back}">Back</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Basic Info -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header fw-bold">Customer Information</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Nr.</dt>
+                        <dd class="col-sm-8" th:text="${customer.customerNumber()}"></dd>
+
+                        <dt class="col-sm-4">Company</dt>
+                        <dd class="col-sm-8" th:text="${customer.companyName()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Name</dt>
+                        <dd class="col-sm-8" th:text="${(customer.firstName() ?: '') + ' ' + (customer.lastName() ?: '')}"></dd>
+
+                        <dt class="col-sm-4">E-Mail</dt>
+                        <dd class="col-sm-8" th:text="${customer.email()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Phone</dt>
+                        <dd class="col-sm-8" th:text="${customer.phone()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">VAT Nr.</dt>
+                        <dd class="col-sm-8" th:text="${customer.vatNumber()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            <span th:if="${customer.active()}" class="badge bg-success">Active</span>
+                            <span th:unless="${customer.active()}" class="badge bg-secondary">Inactive</span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address & Terms -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header fw-bold">Address & Terms</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Street</dt>
+                        <dd class="col-sm-8" th:text="${customer.street()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">City</dt>
+                        <dd class="col-sm-8" th:text="${(customer.postalCode() ?: '') + ' ' + (customer.city() ?: '')}"></dd>
+
+                        <dt class="col-sm-4">Canton</dt>
+                        <dd class="col-sm-8" th:text="${customer.canton()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Country</dt>
+                        <dd class="col-sm-8" th:text="${customer.country()}"></dd>
+
+                        <dt class="col-sm-4">Payment Terms</dt>
+                        <dd class="col-sm-8" th:text="${customer.paymentTerms() + ' days'}"></dd>
+
+                        <dt class="col-sm-4">Credit Limit</dt>
+                        <dd class="col-sm-8" th:text="'CHF ' + ${#numbers.formatDecimal(customer.creditLimit(), 1, 2)}"></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="card mb-4" th:if="${customer.notes() != null and !customer.notes().isBlank()}">
+        <div class="card-header fw-bold">Notes</div>
+        <div class="card-body" th:text="${customer.notes()}"></div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white fw-bold">Danger Zone</div>
+        <div class="card-body">
+            <form th:action="@{/app/sales/customers/{id}/delete(id=${customer.id()})}" method="post"
+                  onsubmit="return confirm('Are you sure you want to delete this customer?');">
+                <button type="submit" class="btn btn-outline-danger" th:text="#{common.delete}">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

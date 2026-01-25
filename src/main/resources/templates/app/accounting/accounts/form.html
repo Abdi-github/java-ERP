@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title>Account Form</title></head>
+<body>
+<div layout:fragment="content">
+    <h1 th:text="${editMode} ? 'Edit Account' : 'New Account'">Account Form</h1>
+    <div class="card mt-3">
+        <div class="card-body">
+            <form th:action="${editMode} ? @{/app/accounting/accounts/{id}(id=${accountId})} : @{/app/accounting/accounts}"
+                  th:object="${accountRequest}" method="post">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label" th:text="#{accounting.accountNumber}">Account Number</label>
+                        <input type="text" class="form-control" th:field="*{accountNumber}" th:classappend="${#fields.hasErrors('accountNumber')} ? 'is-invalid'"/>
+                        <div class="invalid-feedback" th:errors="*{accountNumber}"></div>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label" th:text="#{accounting.accountName}">Name</label>
+                        <input type="text" class="form-control" th:field="*{name}" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"/>
+                        <div class="invalid-feedback" th:errors="*{name}"></div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label" th:text="#{accounting.accountType}">Type</label>
+                        <select class="form-select" th:field="*{accountType}">
+                            <option value="">-- Select --</option>
+                            <option th:each="type : ${accountTypes}" th:value="${type}" th:text="${type}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Parent Account</label>
+                        <select class="form-select" th:field="*{parentId}">
+                            <option value="">— None —</option>
+                            <option th:each="acc : ${allAccounts}" th:value="${acc.id()}" th:text="${acc.accountNumber() + ' — ' + acc.name()}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" th:field="*{active}" id="activeCheck"/>
+                            <label class="form-check-label" for="activeCheck">Active</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" rows="3" th:field="*{description}"></textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+                    <a th:href="@{/app/accounting/accounts}" class="btn btn-secondary" th:text="#{common.cancel}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/default}">
+<head><title th:text="${wc.name()}">Work Center</title></head>
+<body><div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="${wc.name()}">Work Center</h1>
+        <div><a th:href="@{/app/production/work-centers/{id}/edit(id=${wc.id()})}" class="btn btn-outline-primary" th:text="#{common.edit}">Edit</a>
+            <a th:href="@{/app/production/work-centers}" class="btn btn-outline-secondary" th:text="#{common.back}">Back</a></div>
+    </div>
+    <div class="card mb-4"><div class="card-body"><dl class="row mb-0">
+        <dt class="col-sm-3">Code</dt><dd class="col-sm-9" th:text="${wc.code()}"></dd>
+        <dt class="col-sm-3">Name</dt><dd class="col-sm-9" th:text="${wc.name()}"></dd>
+        <dt class="col-sm-3">Description</dt><dd class="col-sm-9" th:text="${wc.description()} ?: '—'"></dd>
+        <dt class="col-sm-3">Capacity / Day</dt><dd class="col-sm-9" th:text="${#numbers.formatDecimal(wc.capacityPerDay(), 1, 2)}"></dd>
+        <dt class="col-sm-3">Cost / Hour</dt><dd class="col-sm-9" th:text="'CHF ' + ${#numbers.formatDecimal(wc.costPerHour(), 1, 2)}"></dd>
+        <dt class="col-sm-3">Status</dt><dd class="col-sm-9"><span th:if="${wc.active()}" class="badge bg-success">Active</span><span th:unless="${wc.active()}" class="badge bg-secondary">Inactive</span></dd>
+    </dl></div></div>
+    <div class="card border-danger"><div class="card-header bg-danger text-white fw-bold">Danger Zone</div><div class="card-body">
+        <form th:action="@{/app/production/work-centers/{id}/delete(id=${wc.id()})}" method="post" onsubmit="return confirm('Delete?');"><button type="submit" class="btn btn-outline-danger" th:text="#{common.delete}">Delete</button></form>
+    </div></div>
+</div></body></html>
+

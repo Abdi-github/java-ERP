@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/default}">
+<head><title th:text="${editMode} ? 'Arbeitsstation bearbeiten' : 'Neue Arbeitsstation'">WC Form</title></head>
+<body><div layout:fragment="content">
+    <h1 th:text="${editMode} ? 'Arbeitsstation bearbeiten' : 'Neue Arbeitsstation'">Work Center Form</h1>
+    <form th:action="${editMode} ? @{/app/production/work-centers/{id}(id=${wcId})} : @{/app/production/work-centers}" th:object="${wcRequest}" method="post" class="mt-4">
+        <div class="card mb-4"><div class="card-body">
+            <div class="row"><div class="col-md-4 mb-3"><label class="form-label">Code</label><input type="text" class="form-control" th:field="*{code}" required/></div>
+                <div class="col-md-8 mb-3"><label class="form-label">Name</label><input type="text" class="form-control" th:field="*{name}" required/></div></div>
+            <div class="mb-3"><label class="form-label">Description</label><textarea class="form-control" th:field="*{description}" rows="2"></textarea></div>
+            <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Capacity / Day</label><input type="number" step="0.01" class="form-control" th:field="*{capacityPerDay}"/></div>
+                <div class="col-md-6 mb-3"><label class="form-label">Cost / Hour (CHF)</label><input type="number" step="0.01" class="form-control" th:field="*{costPerHour}"/></div></div>
+            <div class="form-check"><input type="checkbox" class="form-check-input" th:field="*{active}" id="active"/><label class="form-check-label" for="active">Active</label></div>
+        </div></div>
+        <div class="d-flex gap-2"><button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+            <a th:href="@{/app/production/work-centers}" class="btn btn-outline-secondary" th:text="#{common.cancel}">Cancel</a></div>
+    </form>
+</div></body></html>
+

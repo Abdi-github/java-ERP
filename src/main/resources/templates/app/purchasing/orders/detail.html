@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title th:text="${order.orderNumber()}">Purchase Order Detail</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><h1 th:text="${order.orderNumber()}">PO-2026-00001</h1>
+            <span class="badge fs-6" th:classappend="${order.status().name() == 'DRAFT' ? 'bg-secondary' : order.status().name() == 'ORDERED' ? 'bg-primary' : order.status().name() == 'CONFIRMED' ? 'bg-info' : order.status().name() == 'RECEIVED' ? 'bg-success' : order.status().name() == 'COMPLETED' ? 'bg-dark' : 'bg-danger'}" th:text="${order.status()}"></span>
+        </div>
+        <div class="d-flex gap-2">
+            <form th:if="${order.status().name() == 'DRAFT'}" th:action="@{/app/purchasing/orders/{id}/submit(id=${order.id()})}" method="post" class="d-inline"><button type="submit" class="btn btn-primary">📤 Submit</button></form>
+            <form th:if="${order.status().name() == 'ORDERED'}" th:action="@{/app/purchasing/orders/{id}/confirm(id=${order.id()})}" method="post" class="d-inline"><button type="submit" class="btn btn-info">✔ Confirm</button></form>
+            <form th:if="${order.status().name() == 'CONFIRMED' or order.status().name() == 'PARTIALLY_RECEIVED'}" th:action="@{/app/purchasing/orders/{id}/receive(id=${order.id()})}" method="post" class="d-inline"><button type="submit" class="btn btn-success">📦 Receive</button></form>
+            <form th:if="${order.status().name() == 'RECEIVED'}" th:action="@{/app/purchasing/orders/{id}/complete(id=${order.id()})}" method="post" class="d-inline"><button type="submit" class="btn btn-dark">✓ Complete</button></form>
+            <form th:if="${order.status().name() != 'COMPLETED' and order.status().name() != 'CANCELLED'}" th:action="@{/app/purchasing/orders/{id}/cancel(id=${order.id()})}" method="post" class="d-inline" onsubmit="return confirm('Cancel this order?');"><button type="submit" class="btn btn-outline-danger">✖ Cancel</button></form>
+            <a th:if="${order.status().name() == 'DRAFT'}" th:href="@{/app/purchasing/orders/{id}/edit(id=${order.id()})}" class="btn btn-outline-primary" th:text="#{common.edit}">Edit</a>
+            <a th:href="@{/app/purchasing/orders}" class="btn btn-outline-secondary" th:text="#{common.back}">Back</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6"><div class="card mb-4"><div class="card-header fw-bold">Order Information</div><div class="card-body"><dl class="row mb-0">
+            <dt class="col-sm-5">Order Number</dt><dd class="col-sm-7" th:text="${order.orderNumber()}"></dd>
+            <dt class="col-sm-5">Supplier</dt><dd class="col-sm-7"><a th:href="@{/app/purchasing/suppliers/{id}(id=${order.supplierId()})}" th:text="${order.supplierName()}"></a></dd>
+            <dt class="col-sm-5">Order Date</dt><dd class="col-sm-7" th:text="${order.orderDate()}"></dd>
+            <dt class="col-sm-5">Expected Delivery</dt><dd class="col-sm-7" th:text="${order.expectedDeliveryDate()} ?: '—'"></dd>
+            <dt class="col-sm-5">Actual Delivery</dt><dd class="col-sm-7" th:text="${order.actualDeliveryDate()} ?: '—'"></dd>
+        </dl></div></div></div>
+        <div class="col-md-6"><div class="card mb-4"><div class="card-header fw-bold">Totals</div><div class="card-body"><dl class="row mb-0">
+            <dt class="col-sm-5">Subtotal</dt><dd class="col-sm-7" th:text="'CHF ' + ${#numbers.formatDecimal(order.subtotal(), 1, 2)}"></dd>
+            <dt class="col-sm-5">VAT</dt><dd class="col-sm-7" th:text="'CHF ' + ${#numbers.formatDecimal(order.vatAmount(), 1, 2)}"></dd>
+            <dt class="col-sm-5 fw-bold">Total</dt><dd class="col-sm-7 fw-bold" th:text="'CHF ' + ${#numbers.formatDecimal(order.totalAmount(), 1, 2)}"></dd>
+        </dl></div></div></div>
+    </div>
+    <div class="card mb-4"><div class="card-header fw-bold">Order Lines</div><div class="table-responsive">
+        <table class="table table-hover mb-0"><thead><tr><th>#</th><th>Material</th><th>Description</th><th class="text-end">Qty</th><th class="text-end">Unit Price</th><th class="text-end">Discount</th><th>VAT</th><th class="text-end">Line Total</th></tr></thead><tbody>
+        <tr th:each="l : ${order.lines()}">
+            <td th:text="${l.position()}"></td><td th:text="${l.materialName()}"></td><td th:text="${l.description()} ?: '—'"></td>
+            <td class="text-end" th:text="${#numbers.formatDecimal(l.quantity(), 1, 2)}"></td>
+            <td class="text-end" th:text="'CHF ' + ${#numbers.formatDecimal(l.unitPrice(), 1, 2)}"></td>
+            <td class="text-end" th:text="${#numbers.formatDecimal(l.discountPct(), 1, 2)} + '%'"></td>
+            <td th:text="${l.vatRate()}"></td>
+            <td class="text-end fw-bold" th:text="'CHF ' + ${#numbers.formatDecimal(l.lineTotal(), 1, 2)}"></td>
+        </tr>
+        <tr th:if="${order.lines().isEmpty()}"><td colspan="8" class="text-center text-muted py-3">No line items</td></tr>
+        </tbody></table>
+    </div></div>
+    <div class="card mb-4" th:if="${order.notes() != null and !order.notes().isBlank()}"><div class="card-header fw-bold">Notes</div><div class="card-body" th:text="${order.notes()}"></div></div>
+    <div class="card border-danger" th:if="${order.status().name() == 'DRAFT' or order.status().name() == 'CANCELLED'}"><div class="card-header bg-danger text-white fw-bold">Danger Zone</div><div class="card-body">
+        <form th:action="@{/app/purchasing/orders/{id}/delete(id=${order.id()})}" method="post" onsubmit="return confirm('Permanently delete this order?');"><button type="submit" class="btn btn-outline-danger" th:text="#{common.delete}">Delete</button></form>
+    </div></div>
+</div>
+</body></html>
+

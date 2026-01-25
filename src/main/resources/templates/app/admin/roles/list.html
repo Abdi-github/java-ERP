@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/default}">
+<head><title th:text="#{auth.roles}">Roles</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="#{auth.roles}">Roles</h1>
+        <a th:href="@{/app/admin/roles/new}" class="btn btn-primary"
+           sec:authorize="hasAuthority('ADMIN:ROLES_MANAGE')">
+            ➕ <span th:text="#{common.create}">Create</span>
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" data-dt data-dt-paging="false">
+                <thead>
+                <tr>
+                    <th th:text="#{role.name}">Name</th>
+                    <th th:text="#{role.description}">Description</th>
+                    <th th:text="#{role.permissions}">Permissions</th>
+                    <th th:text="#{common.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="role : ${roles.content}">
+                    <td>
+                        <a th:href="@{/app/admin/roles/{id}(id=${role.id()})}"
+                           th:text="${role.name()}" class="fw-bold text-decoration-none"></a>
+                    </td>
+                    <td th:text="${role.description()}"></td>
+                    <td>
+                        <span class="badge bg-info" th:text="${role.permissions().size()}">0</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/app/admin/roles/{id}(id=${role.id()})}"
+                           class="btn btn-sm btn-outline-secondary me-1" th:text="#{common.detail}">Detail</a>
+                        <a th:href="@{/app/admin/roles/{id}/edit(id=${role.id()})}"
+                           class="btn btn-sm btn-outline-primary"
+                           sec:authorize="hasAuthority('ADMIN:ROLES_MANAGE')"
+                           th:text="#{common.edit}">Edit</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(roles.content)}">
+                    <td colspan="4" class="text-center text-muted" th:text="#{common.noResults}">No results found</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav th:if="${roles.totalPages > 1}" class="mt-3">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${roles.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/app/admin/roles(page=${roles.number - 1})}">«</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, roles.totalPages - 1)}"
+                th:classappend="${i == roles.number} ? 'active'">
+                <a class="page-link" th:href="@{/app/admin/roles(page=${i})}"
+                   th:text="${i + 1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${roles.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/app/admin/roles(page=${roles.number + 1})}">»</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>
+

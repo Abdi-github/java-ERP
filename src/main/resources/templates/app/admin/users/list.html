@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title>Users</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="#{auth.users}">Users</h1>
+        <a th:href="@{/app/admin/users/new}" class="btn btn-primary">
+            ➕ <span th:text="#{common.create}">Create</span>
+        </a>
+    </div>
+    <form class="row g-3 mb-4" th:action="@{/app/admin/users}" method="get">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control"
+                       th:placeholder="#{common.search}" th:value="${search}"/>
+                <button class="btn btn-outline-secondary" type="submit" th:text="#{common.search}">Search</button>
+            </div>
+        </div>
+    </form>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" data-dt data-dt-paging="false">
+                <thead>
+                <tr>
+                    <th th:text="#{auth.username}">Username</th>
+                    <th>Email</th>
+                    <th th:text="#{auth.displayName}">Name</th>
+                    <th th:text="#{auth.roles}">Roles</th>
+                    <th>Status</th>
+                    <th th:text="#{common.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${users.content}">
+                    <td>
+                        <a th:href="@{/app/admin/users/{id}(id=${user.id()})}"
+                           th:text="${user.username()}" class="fw-bold text-decoration-none"></a>
+                    </td>
+                    <td th:text="${user.email()}"></td>
+                    <td th:text="${user.displayName()}"></td>
+                    <td>
+                        <span th:each="role : ${user.roles()}" class="badge bg-info me-1" th:text="${role}"></span>
+                    </td>
+                    <td>
+                        <span th:if="${user.enabled()}" class="badge bg-success">Active</span>
+                        <span th:unless="${user.enabled()}" class="badge bg-secondary">Disabled</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/app/admin/users/{id}/edit(id=${user.id()})}"
+                           class="btn btn-sm btn-outline-primary" th:text="#{common.edit}">Edit</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(users.content)}">
+                    <td colspan="6" class="text-center text-muted" th:text="#{common.noResults}">No results found</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

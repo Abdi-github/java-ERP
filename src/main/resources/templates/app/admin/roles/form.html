@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title>Role Form</title></head>
+<body>
+<div layout:fragment="content">
+    <h1 th:text="${editMode} ? 'Edit Role' : 'New Role'">Role Form</h1>
+
+    <div th:if="${errorMessage}" class="alert alert-danger mt-3" th:text="${errorMessage}"></div>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <form th:action="${editMode} ? @{/app/admin/roles/{id}(id=${roleId})} : @{/app/admin/roles}"
+                  th:object="${roleRequest}" method="post">
+
+                <!-- Name & Description -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label" th:text="#{role.name}">Name</label>
+                        <input type="text" class="form-control" th:field="*{name}"
+                               th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                               placeholder="e.g. SALES_MANAGER"/>
+                        <div class="invalid-feedback" th:errors="*{name}"></div>
+                        <small class="text-muted">Will be converted to UPPERCASE</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" th:text="#{role.description}">Description</label>
+                        <input type="text" class="form-control" th:field="*{description}"
+                               th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'"
+                               placeholder="e.g. Sales department manager"/>
+                        <div class="invalid-feedback" th:errors="*{description}"></div>
+                    </div>
+                </div>
+
+                <!-- Permissions grouped by module -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-key me-1"></i>
+                        <span th:text="#{role.permissions}">Permissions</span>
+                    </label>
+                    <div class="border rounded p-3">
+                        <div th:each="entry : ${permissionsByModule}" class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <h6 class="text-primary mb-0 me-3">
+                                    <i class="bi bi-folder me-1"></i>
+                                    <span th:text="${entry.key}">MODULE</span>
+                                </h6>
+                                <button type="button" class="btn btn-sm btn-outline-secondary select-all-btn"
+                                        th:data-module="${entry.key}"
+                                        onclick="toggleModulePermissions(this)">
+                                    Select All
+                                </button>
+                            </div>
+                            <div class="row">
+                                <div th:each="perm : ${entry.value}" class="col-md-6 col-lg-4">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input"
+                                               th:field="*{permissionIds}" th:value="${perm.id()}"
+                                               th:id="${'perm_' + perm.id()}"
+                                               th:data-module="${entry.key}"/>
+                                        <label class="form-check-label" th:for="${'perm_' + perm.id()}">
+                                            <span class="badge bg-secondary me-1" th:text="${perm.code()}">SALES:VIEW</span>
+                                            <small class="text-muted" th:text="${perm.description()}">Description</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+                    <a th:href="@{/app/admin/roles}" class="btn btn-secondary" th:text="#{common.cancel}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toggle all permissions for a module -->
+    <script th:inline="javascript">
+        function toggleModulePermissions(btn) {
+            const module = btn.getAttribute('data-module');
+            const checkboxes = document.querySelectorAll('input[data-module="' + module + '"]');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            btn.textContent = allChecked ? 'Select All' : 'Deselect All';
+        }
+    </script>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="${interaction.subject()}">Interaction Detail</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="${interaction.subject()}">Interaction Detail</h1>
+        <a th:href="@{/app/crm/contacts/{id}(id=${interaction.contactId()})}"
+           class="btn btn-outline-secondary" th:text="#{common.back}">Back to Contact</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3" th:text="#{crm.contactName}">Contact</dt>
+                        <dd class="col-sm-9">
+                            <a th:href="@{/app/crm/contacts/{id}(id=${interaction.contactId()})}"
+                               th:text="${interaction.contactName()}" class="text-decoration-none"></a>
+                        </dd>
+
+                        <dt class="col-sm-3" th:text="#{crm.interactionType}">Type</dt>
+                        <dd class="col-sm-9"><span class="badge bg-info" th:text="${interaction.interactionType()}"></span></dd>
+
+                        <dt class="col-sm-3" th:text="#{crm.subject}">Subject</dt>
+                        <dd class="col-sm-9" th:text="${interaction.subject()}"></dd>
+
+                        <dt class="col-sm-3" th:text="#{crm.interactionDate}">Date</dt>
+                        <dd class="col-sm-9" th:text="${interaction.interactionDate()}"></dd>
+
+                        <dt class="col-sm-3" th:text="#{crm.followUpDate}">Follow-up</dt>
+                        <dd class="col-sm-9" th:text="${interaction.followUpDate()} ?: '—'"></dd>
+
+                        <dt class="col-sm-3">Created</dt>
+                        <dd class="col-sm-9" th:text="${interaction.createdAt()}"></dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card" th:if="${interaction.description() != null and !interaction.description().isBlank()}">
+                <div class="card-header fw-bold">Description</div>
+                <div class="card-body" th:text="${interaction.description()}"></div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

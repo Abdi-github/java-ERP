@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="${contact.fullName()}">Contact Detail</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="${contact.fullName()}">Contact Name</h1>
+        <div>
+            <a th:href="@{/app/crm/contacts/{id}/edit(id=${contact.id()})}"
+               class="btn btn-outline-primary" th:text="#{common.edit}">Edit</a>
+            <a th:href="@{/app/crm/contacts}" class="btn btn-outline-secondary" th:text="#{common.back}">Back</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Contact Info -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header fw-bold" th:text="#{crm.contactInfo}">Contact Information</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4" th:text="#{crm.firstName}">First Name</dt>
+                        <dd class="col-sm-8" th:text="${contact.firstName()}"></dd>
+
+                        <dt class="col-sm-4" th:text="#{crm.lastName}">Last Name</dt>
+                        <dd class="col-sm-8" th:text="${contact.lastName()}"></dd>
+
+                        <dt class="col-sm-4">E-Mail</dt>
+                        <dd class="col-sm-8" th:text="${contact.email()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4" th:text="#{crm.phone}">Phone</dt>
+                        <dd class="col-sm-8" th:text="${contact.phone()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            <span th:if="${contact.active()}" class="badge bg-success">Active</span>
+                            <span th:unless="${contact.active()}" class="badge bg-secondary">Inactive</span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Business Info -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header fw-bold" th:text="#{crm.businessInfo}">Business Information</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4" th:text="#{crm.company}">Company</dt>
+                        <dd class="col-sm-8" th:text="${contact.company()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4" th:text="#{crm.position}">Position</dt>
+                        <dd class="col-sm-8" th:text="${contact.position()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Customer ID</dt>
+                        <dd class="col-sm-8" th:text="${contact.customerId()} ?: '—'"></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="card mb-4" th:if="${contact.notes() != null and !contact.notes().isBlank()}">
+        <div class="card-header fw-bold">Notes</div>
+        <div class="card-body" th:text="${contact.notes()}"></div>
+    </div>
+
+    <!-- Interactions -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-bold" th:text="#{crm.interactions}">Interactions</span>
+            <a th:href="@{/app/crm/interactions/new(contactId=${contact.id()})}" class="btn btn-sm btn-primary">
+                ➕ <span th:text="#{crm.addInteraction}">Add Interaction</span>
+            </a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                <tr>
+                    <th th:text="#{crm.interactionDate}">Date</th>
+                    <th th:text="#{crm.interactionType}">Type</th>
+                    <th th:text="#{crm.subject}">Subject</th>
+                    <th th:text="#{crm.followUpDate}">Follow-up</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="i : ${interactions.content}">
+                    <td th:text="${i.interactionDate()}"></td>
+                    <td><span class="badge bg-info" th:text="${i.interactionType()}"></span></td>
+                    <td>
+                        <a th:href="@{/app/crm/interactions/{id}(id=${i.id()})}"
+                           th:text="${i.subject()}" class="text-decoration-none"></a>
+                    </td>
+                    <td th:text="${i.followUpDate()} ?: '—'"></td>
+                </tr>
+                <tr th:if="${interactions.content.isEmpty()}">
+                    <td colspan="4" class="text-center text-muted py-3" th:text="#{common.noResults}">No interactions</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white fw-bold">Danger Zone</div>
+        <div class="card-body">
+            <form th:action="@{/app/crm/contacts/{id}/delete(id=${contact.id()})}" method="post"
+                  onsubmit="return confirm('Are you sure you want to delete this contact?');">
+                <button type="submit" class="btn btn-outline-danger" th:text="#{common.delete}">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

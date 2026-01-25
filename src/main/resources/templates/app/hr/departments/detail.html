@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title th:text="${department.name()}">Department Detail</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="bi bi-diagram-3 me-2"></i>
+            <span th:text="${department.name()}">Department</span>
+        </h1>
+        <div class="d-flex gap-2">
+            <a th:href="@{/app/hr/departments/{id}/edit(id=${department.id()})}"
+               class="btn btn-outline-primary">
+                <i class="bi bi-pencil me-1"></i>
+                <span th:text="#{common.edit}">Edit</span>
+            </a>
+            <a th:href="@{/app/hr/departments}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>
+                <span th:text="#{common.back}">Back</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Status Banner -->
+    <div class="alert alert-success d-flex align-items-center gap-2 mb-4" th:if="${department.active()}">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>Abteilung ist <strong>aktiv</strong></span>
+    </div>
+    <div class="alert alert-secondary d-flex align-items-center gap-2 mb-4" th:unless="${department.active()}">
+        <i class="bi bi-dash-circle"></i>
+        <span>Abteilung ist <strong>inaktiv</strong></span>
+    </div>
+
+    <div class="row g-4">
+        <!-- Core Info -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header fw-bold">
+                    <i class="bi bi-info-circle me-1"></i> Abteilungsinformationen
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Code</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-secondary fs-6 font-monospace" th:text="${department.code()}"></span>
+                        </dd>
+
+                        <dt class="col-sm-5">Name</dt>
+                        <dd class="col-sm-7 fw-semibold" th:text="${department.name()}"></dd>
+
+                        <dt class="col-sm-5">Beschreibung</dt>
+                        <dd class="col-sm-7 text-muted" th:text="${department.description()} ?: '—'"></dd>
+
+                        <dt class="col-sm-5">Manager</dt>
+                        <dd class="col-sm-7" th:text="${department.managerName()} ?: '—'"></dd>
+
+                        <dt class="col-sm-5">Status</dt>
+                        <dd class="col-sm-7">
+                            <span th:if="${department.active()}" class="badge bg-success">
+                                <i class="bi bi-check-circle me-1"></i>Aktiv
+                            </span>
+                            <span th:unless="${department.active()}" class="badge bg-secondary">
+                                <i class="bi bi-dash-circle me-1"></i>Inaktiv
+                            </span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audit Info -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header fw-bold">
+                    <i class="bi bi-clock-history me-1"></i> Audit
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Erstellt</dt>
+                        <dd class="col-sm-7"
+                            th:text="${department.createdAt() != null ? #temporals.format(department.createdAt(), 'dd.MM.yyyy HH:mm') : '—'}"></dd>
+
+                        <dt class="col-sm-5">Zuletzt geändert</dt>
+                        <dd class="col-sm-7"
+                            th:text="${department.updatedAt() != null ? #temporals.format(department.updatedAt(), 'dd.MM.yyyy HH:mm') : '—'}"></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="card border-danger mt-4">
+        <div class="card-header bg-danger text-white fw-bold">
+            <i class="bi bi-exclamation-triangle me-1"></i> Danger Zone
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-3">Das Löschen einer Abteilung ist dauerhaft und kann nicht rückgängig gemacht werden.</p>
+            <form th:action="@{/app/hr/departments/{id}/delete(id=${department.id()})}" method="post">
+                <button type="submit" class="btn btn-outline-danger"
+                        onclick="return confirm('Diese Abteilung wirklich löschen?')">
+                    <i class="bi bi-trash me-1"></i>
+                    <span th:text="#{common.delete}">Löschen</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="${warehouse.name()}">Warehouse Detail</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="${warehouse.name()}">Warehouse</h1>
+        <div>
+            <a th:href="@{/app/inventory/warehouses/{id}/edit(id=${warehouse.id()})}"
+               class="btn btn-outline-primary" th:text="#{common.edit}">Edit</a>
+            <a th:href="@{/app/inventory/warehouses}" class="btn btn-outline-secondary" th:text="#{common.back}">Back</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header fw-bold" th:text="#{inventory.warehouse}">Warehouse Information</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Code</dt>
+                        <dd class="col-sm-8" th:text="${warehouse.code()}"></dd>
+
+                        <dt class="col-sm-4">Name</dt>
+                        <dd class="col-sm-8" th:text="${warehouse.name()}"></dd>
+
+                        <dt class="col-sm-4">Description</dt>
+                        <dd class="col-sm-8" th:text="${warehouse.description()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Address</dt>
+                        <dd class="col-sm-8" th:text="${warehouse.address()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            <span th:if="${warehouse.active()}" class="badge bg-success">Active</span>
+                            <span th:unless="${warehouse.active()}" class="badge bg-secondary">Inactive</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Created</dt>
+                        <dd class="col-sm-8" th:text="${warehouse.createdAt()}"></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white fw-bold">Danger Zone</div>
+        <div class="card-body">
+            <form th:action="@{/app/inventory/warehouses/{id}/delete(id=${warehouse.id()})}" method="post"
+                  onsubmit="return confirm('Are you sure you want to delete this warehouse?');">
+                <button type="submit" class="btn btn-outline-danger" th:text="#{common.delete}">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

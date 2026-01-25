@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title th:text="#{qc.checks}">Quality Checks</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="#{qc.checks}">Quality Checks</h1>
+        <a th:href="@{/app/quality-control/checks/new}" class="btn btn-primary">
+            ➕ <span th:text="#{common.create}">Create</span>
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" data-dt data-dt-paging="false">
+                <thead>
+                <tr>
+                    <th>Check #</th>
+                    <th>Inspection Plan</th>
+                    <th>Date</th>
+                    <th>Checked By</th>
+                    <th>Result</th>
+                    <th th:text="#{common.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${checks.content}">
+                    <td>
+                        <a th:href="@{/app/quality-control/checks/{id}(id=${c.id()})}"
+                           th:text="${c.checkNumber()}" class="fw-bold text-decoration-none"></a>
+                    </td>
+                    <td th:text="${c.inspectionPlanName()}"></td>
+                    <td th:text="${c.checkDate()}"></td>
+                    <td th:text="${c.checkedBy()} ?: '—'"></td>
+                    <td>
+                        <span th:if="${c.result().name() == 'PASS'}" class="badge bg-success">PASS</span>
+                        <span th:if="${c.result().name() == 'FAIL'}" class="badge bg-danger">FAIL</span>
+                        <span th:if="${c.result().name() == 'CONDITIONAL'}" class="badge bg-warning text-dark">CONDITIONAL</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/app/quality-control/checks/{id}(id=${c.id()})}"
+                           class="btn btn-sm btn-outline-primary">View</a>
+                    </td>
+                </tr>
+                <tr th:if="${checks.content.isEmpty()}">
+                    <td colspan="6" class="text-center text-muted py-4" th:text="#{common.noResults}">No results</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer d-flex justify-content-between align-items-center" th:if="${checks.totalPages > 1}">
+            <span th:text="|Page ${checks.number + 1} of ${checks.totalPages}|"></span>
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${checks.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/quality-control/checks(page=${checks.number - 1})}">‹</a>
+                    </li>
+                    <li class="page-item" th:classappend="${checks.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/quality-control/checks(page=${checks.number + 1})}">›</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

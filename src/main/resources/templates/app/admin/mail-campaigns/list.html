@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="#{campaign.title}">Mail-Kampagnen</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-megaphone"></i>
+            <span th:text="#{campaign.title}">Mail-Kampagnen</span>
+        </h2>
+        <a th:href="@{/app/admin/mail-campaigns/new}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i>
+            <span th:text="#{campaign.create}">Neue Kampagne</span>
+        </a>
+    </div>
+
+    <div th:if="${campaigns.isEmpty()}" class="text-center text-muted py-5">
+        <p th:text="#{common.noResults}">Keine Ergebnisse.</p>
+    </div>
+
+    <div class="table-responsive" th:if="${!campaigns.isEmpty()}">
+        <table class="table table-striped table-hover" data-dt data-dt-paging="false">
+            <thead class="table-dark">
+            <tr>
+                <th th:text="#{campaign.name}">Name</th>
+                <th th:text="#{campaign.template}">Template</th>
+                <th th:text="#{campaign.segment}">Zielgruppe</th>
+                <th>Status</th>
+                <th th:text="#{campaign.progress}">Fortschritt</th>
+                <th th:text="#{campaign.scheduledAt}">Geplant</th>
+                <th th:text="#{common.actions}">Aktionen</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="c : ${campaigns}">
+                <td>
+                    <a th:href="@{/app/admin/mail-campaigns/{id}(id=${c.id()})}" th:text="${c.name()}">Campaign</a>
+                </td>
+                <td th:text="${c.templateCode()}">TEMPLATE</td>
+                <td th:text="${c.targetSegment()}">ALL_USERS</td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${c.status().name() == 'DRAFT'} ? 'bg-secondary' :
+                                          ${c.status().name() == 'QUEUED'} ? 'bg-warning text-dark' :
+                                          ${c.status().name() == 'RUNNING'} ? 'bg-info' :
+                                          ${c.status().name() == 'COMPLETED'} ? 'bg-success' :
+                                          ${c.status().name() == 'FAILED'} ? 'bg-danger' : 'bg-dark'"
+                          th:text="${c.status()}">STATUS</span>
+                </td>
+                <td>
+                    <span th:text="${c.sentCount() + '/' + c.totalRecipients()}">0/0</span>
+                    <small class="text-danger" th:if="${c.failedCount() > 0}"
+                           th:text="'(' + ${c.failedCount()} + ' fehlg.)'"> (0 failed)</small>
+                </td>
+                <td th:text="${c.scheduledAt() != null ? #temporals.format(c.scheduledAt(), 'dd.MM.yyyy HH:mm') : '—'}">—</td>
+                <td>
+                    <a th:href="@{/app/admin/mail-campaigns/{id}(id=${c.id()})}"
+                       class="btn btn-sm btn-outline-primary" th:text="#{common.edit}">Details</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{fragments/pagination :: pagination(${campaigns})}"></div>
+</div>
+</body>
+</html>
+

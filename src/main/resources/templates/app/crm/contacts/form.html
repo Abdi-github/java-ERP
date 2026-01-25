@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="${editMode} ? 'Kontakt bearbeiten' : 'Neuer Kontakt'">Contact Form</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <h1 th:text="${editMode} ? 'Kontakt bearbeiten' : 'Neuer Kontakt'">Contact Form</h1>
+
+    <form th:action="${editMode} ? @{/app/crm/contacts/{id}(id=${contactId})} : @{/app/crm/contacts}"
+          th:object="${contactRequest}" method="post" class="mt-4">
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header fw-bold" th:text="#{crm.contactInfo}">Contact Info</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" th:text="#{crm.firstName}">First Name</label>
+                                <input type="text" class="form-control" th:field="*{firstName}"
+                                       th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid'"/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" th:text="#{crm.lastName}">Last Name</label>
+                                <input type="text" class="form-control" th:field="*{lastName}"
+                                       th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid'"/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">E-Mail</label>
+                            <input type="email" class="form-control" th:field="*{email}"
+                                   th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"/>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" th:text="#{crm.phone}">Phone</label>
+                            <input type="text" class="form-control" th:field="*{phone}"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header fw-bold" th:text="#{crm.businessInfo}">Business Info</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label" th:text="#{crm.company}">Company</label>
+                            <input type="text" class="form-control" th:field="*{company}"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" th:text="#{crm.position}">Position</label>
+                            <input type="text" class="form-control" th:field="*{position}"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Customer ID</label>
+                            <input type="text" class="form-control" th:field="*{customerId}"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-control" th:field="*{notes}" rows="3"></textarea>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" th:field="*{active}" id="active"/>
+                    <label class="form-check-label" for="active">Active</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+            <a th:href="@{/app/crm/contacts}" class="btn btn-outline-secondary" th:text="#{common.cancel}">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>
+

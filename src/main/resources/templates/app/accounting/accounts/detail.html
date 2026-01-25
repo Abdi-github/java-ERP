@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title>Account Details</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="${account.accountNumber() + ' — ' + account.name()}">Account</h1>
+        <div>
+            <a th:href="@{/app/accounting/accounts/{id}/edit(id=${account.id()})}" class="btn btn-outline-primary" th:text="#{common.edit}">Edit</a>
+            <a th:href="@{/app/accounting/accounts}" class="btn btn-outline-secondary" th:text="#{common.back}">Back</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4" th:text="#{accounting.accountNumber}">Number</dt>
+                        <dd class="col-sm-8" th:text="${account.accountNumber()}"></dd>
+                        <dt class="col-sm-4" th:text="#{accounting.accountName}">Name</dt>
+                        <dd class="col-sm-8" th:text="${account.name()}"></dd>
+                        <dt class="col-sm-4" th:text="#{accounting.accountType}">Type</dt>
+                        <dd class="col-sm-8"><span class="badge bg-secondary" th:text="${account.accountType()}"></span></dd>
+                        <dt class="col-sm-4">Parent</dt>
+                        <dd class="col-sm-8" th:text="${account.parentName()} ?: '—'"></dd>
+                        <dt class="col-sm-4">Description</dt>
+                        <dd class="col-sm-8" th:text="${account.description()} ?: '—'"></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header fw-bold" th:text="#{accounting.balance}">Balance</div>
+                <div class="card-body text-center">
+                    <h2 th:text="'CHF ' + ${#numbers.formatDecimal(balance, 1, 2)}">CHF 0.00</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

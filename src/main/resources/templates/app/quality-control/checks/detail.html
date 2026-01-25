@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title th:text="${check.checkNumber()}">Quality Check Detail</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="${check.checkNumber()}">Quality Check</h1>
+        <a th:href="@{/app/quality-control/checks}" class="btn btn-outline-secondary" th:text="#{common.back}">Back</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Check Number</dt>
+                        <dd class="col-sm-8" th:text="${check.checkNumber()}"></dd>
+
+                        <dt class="col-sm-4">Inspection Plan</dt>
+                        <dd class="col-sm-8">
+                            <a th:href="@{/app/quality-control/inspection-plans/{id}(id=${check.inspectionPlanId()})}"
+                               th:text="${check.inspectionPlanName()}" class="text-decoration-none"></a>
+                        </dd>
+
+                        <dt class="col-sm-4">Production Order</dt>
+                        <dd class="col-sm-8" th:text="${check.productionOrderId()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Checked By</dt>
+                        <dd class="col-sm-8" th:text="${check.checkedBy()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Date</dt>
+                        <dd class="col-sm-8" th:text="${check.checkDate()}"></dd>
+
+                        <dt class="col-sm-4">Result</dt>
+                        <dd class="col-sm-8">
+                            <span th:if="${check.result().name() == 'PASS'}" class="badge bg-success">PASS</span>
+                            <span th:if="${check.result().name() == 'FAIL'}" class="badge bg-danger">FAIL</span>
+                            <span th:if="${check.result().name() == 'CONDITIONAL'}" class="badge bg-warning text-dark">CONDITIONAL</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Created</dt>
+                        <dd class="col-sm-8" th:text="${check.createdAt()}"></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" th:if="${check.notes() != null and !check.notes().isBlank()}">
+        <div class="card-header fw-bold">Notes</div>
+        <div class="card-body" th:text="${check.notes()}"></div>
+    </div>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>Lager</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="#{inventory.warehouse}">Warehouses</h1>
+        <a th:href="@{/app/inventory/warehouses/new}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> <span th:text="#{common.create}">Create</span>
+        </a>
+    </div>
+
+    <!-- Search -->
+    <form th:action="@{/app/inventory/warehouses}" method="get" class="mb-3">
+        <div class="input-group" style="max-width: 400px;">
+            <input type="text" name="search" class="form-control"
+                   th:value="${search}" th:placeholder="#{common.search}"/>
+            <button class="btn btn-outline-secondary" type="submit" th:text="#{common.search}">Search</button>
+        </div>
+    </form>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover" data-dt data-dt-paging="false">
+            <thead class="table-dark">
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Adresse</th>
+                <th>Aktiv</th>
+                <th th:text="#{common.actions}">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="w : ${warehouses.content}">
+                <td>
+                    <a th:href="@{/app/inventory/stock/levels/warehouse/{id}(id=${w.id()})}"
+                       th:text="${w.code()}">WH-01</a>
+                </td>
+                <td th:text="${w.name()}">Main Warehouse</td>
+                <td th:text="${w.address()}">—</td>
+                <td>
+                    <span th:if="${w.active()}" class="badge bg-success">Aktiv</span>
+                    <span th:unless="${w.active()}" class="badge bg-secondary">Inaktiv</span>
+                </td>
+                <td>
+                    <a th:href="@{/app/inventory/warehouses/{id}/edit(id=${w.id()})}"
+                       class="btn btn-sm btn-outline-primary" th:text="#{common.edit}">Edit</a>
+                    <form th:action="@{/app/inventory/warehouses/{id}/delete(id=${w.id()})}"
+                          method="post" class="d-inline"
+                          onsubmit="return confirm('Lager wirklich löschen?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                th:text="#{common.delete}">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${warehouses.content.isEmpty()}">
+                <td colspan="5" class="text-center text-muted" th:text="#{common.noResults}">No results</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav th:if="${warehouses.totalPages > 1}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${warehouses.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/app/inventory/warehouses(page=${warehouses.number - 1}, search=${search})}">«</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, warehouses.totalPages - 1)}"
+                th:classappend="${i == warehouses.number} ? 'active'">
+                <a class="page-link" th:href="@{/app/inventory/warehouses(page=${i}, search=${search})}"
+                   th:text="${i + 1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${warehouses.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/app/inventory/warehouses(page=${warehouses.number + 1}, search=${search})}">»</a>
+            </li>
+        </ul>
+    </nav>
+
+</div>
+</body>
+</html>
+

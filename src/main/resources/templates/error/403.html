@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="#{error.403.title} + ' – SwiftApp ERP'">403 Forbidden – SwiftApp ERP</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body class="bg-light">
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6 text-center">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="display-1 text-danger mb-3">🔒</div>
+                    <h1 class="h2 text-danger" th:text="#{error.403.title}">Access Denied</h1>
+                    <p class="text-muted mt-3" th:text="#{error.403.message}">
+                        You do not have permission to access this page.
+                    </p>
+                    <div class="mt-4">
+                        <a th:href="@{/app/dashboard}" class="btn btn-primary me-2">
+                            <span th:text="#{nav.dashboard}">Dashboard</span>
+                        </a>
+                        <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                            <span th:text="#{action.back}">Back</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

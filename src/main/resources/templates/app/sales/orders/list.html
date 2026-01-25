@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="#{nav.sales}">Sales Orders</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="#{nav.sales}">Sales Orders</h1>
+        <a th:href="@{/app/sales/orders/new}" class="btn btn-primary">
+            ➕ <span th:text="#{common.create}">Create</span>
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <form class="row g-3 mb-4" th:action="@{/app/sales/orders}" method="get">
+        <div class="col-md-4">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control"
+                       th:placeholder="#{common.search}" th:value="${search}"/>
+                <button class="btn btn-outline-secondary" type="submit" th:text="#{common.search}">Search</button>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select" onchange="this.form.submit()">
+                <option value="" th:text="'— All statuses —'">All</option>
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                        th:selected="${s == selectedStatus}"></option>
+            </select>
+        </div>
+    </form>
+
+    <!-- Orders Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" data-dt data-dt-paging="false">
+                <thead>
+                <tr>
+                    <th>Order Nr.</th>
+                    <th th:text="#{customer.name}">Customer</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th class="text-end">Total (CHF)</th>
+                    <th th:text="#{common.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="o : ${orders.content}">
+                    <td>
+                        <a th:href="@{/app/sales/orders/{id}(id=${o.id()})}"
+                           th:text="${o.orderNumber()}" class="fw-bold text-decoration-none"></a>
+                    </td>
+                    <td th:text="${o.customerName()}"></td>
+                    <td th:text="${o.orderDate()}"></td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${o.status().name() == 'DRAFT' ? 'bg-secondary' :
+                                               o.status().name() == 'CONFIRMED' ? 'bg-primary' :
+                                               o.status().name() == 'PROCESSING' ? 'bg-info' :
+                                               o.status().name() == 'SHIPPED' ? 'bg-warning text-dark' :
+                                               o.status().name() == 'DELIVERED' ? 'bg-success' :
+                                               o.status().name() == 'INVOICED' ? 'bg-teal' :
+                                               o.status().name() == 'COMPLETED' ? 'bg-dark' :
+                                               'bg-danger'}"
+                              th:text="${o.status()}"></span>
+                    </td>
+                    <td class="text-end" th:text="'CHF ' + ${#numbers.formatDecimal(o.totalAmount(), 1, 2)}"></td>
+                    <td>
+                        <a th:href="@{/app/sales/orders/{id}(id=${o.id()})}"
+                           class="btn btn-sm btn-outline-primary">View</a>
+                    </td>
+                </tr>
+                <tr th:if="${orders.content.isEmpty()}">
+                    <td colspan="6" class="text-center text-muted py-4" th:text="#{common.noResults}">
+                        No results found
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer d-flex justify-content-between align-items-center" th:if="${orders.totalPages > 1}">
+            <span th:text="|Page ${orders.number + 1} of ${orders.totalPages}|"></span>
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${orders.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/sales/orders(page=${orders.number - 1}, search=${search}, status=${selectedStatus})}">‹</a>
+                    </li>
+                    <li class="page-item" th:classappend="${orders.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/sales/orders(page=${orders.number + 1}, search=${search}, status=${selectedStatus})}">›</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

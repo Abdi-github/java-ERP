@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title>New Quality Check</title></head>
+<body>
+<div layout:fragment="content">
+    <h1>New Quality Check</h1>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <form th:action="@{/app/quality-control/checks}" th:object="${checkRequest}" method="post"
+                  style="max-width: 700px;">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Inspection Plan *</label>
+                        <select class="form-select" th:field="*{inspectionPlanId}"
+                                th:classappend="${#fields.hasErrors('inspectionPlanId')} ? 'is-invalid'">
+                            <option value="">-- Select --</option>
+                            <option th:each="plan : ${plans}" th:value="${plan.id()}"
+                                    th:text="${plan.planNumber() + ' — ' + plan.name()}"></option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{inspectionPlanId}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Production Order ID</label>
+                        <input type="text" class="form-control" th:field="*{productionOrderId}" placeholder="UUID (optional)"/>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Checked By</label>
+                        <input type="text" class="form-control" th:field="*{checkedBy}"/>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Check Date *</label>
+                        <input type="date" class="form-control" th:field="*{checkDate}"
+                               th:classappend="${#fields.hasErrors('checkDate')} ? 'is-invalid'"/>
+                        <div class="invalid-feedback" th:errors="*{checkDate}"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Result *</label>
+                    <select class="form-select" th:field="*{result}"
+                            th:classappend="${#fields.hasErrors('result')} ? 'is-invalid'">
+                        <option value="">-- Select --</option>
+                        <option th:each="r : ${results}" th:value="${r}" th:text="${r}"></option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{result}"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-control" th:field="*{notes}" rows="3"></textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+                    <a th:href="@{/app/quality-control/checks}" class="btn btn-secondary" th:text="#{common.cancel}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

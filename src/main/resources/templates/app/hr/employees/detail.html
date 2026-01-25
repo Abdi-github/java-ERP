@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title th:text="${employee.fullName()}">Employee Detail</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="${employee.fullName()}">Employee</h1>
+        <div>
+            <a th:href="@{/app/hr/employees/{id}/edit(id=${employee.id()})}"
+               class="btn btn-outline-primary" th:text="#{common.edit}">Edit</a>
+            <a th:href="@{/app/hr/employees}" class="btn btn-outline-secondary" th:text="#{common.back}">Back</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header fw-bold">Personal Information</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Employee #</dt>
+                        <dd class="col-sm-8" th:text="${employee.employeeNumber()}"></dd>
+
+                        <dt class="col-sm-4">Name</dt>
+                        <dd class="col-sm-8" th:text="${employee.fullName()}"></dd>
+
+                        <dt class="col-sm-4">E-Mail</dt>
+                        <dd class="col-sm-8" th:text="${employee.email()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Phone</dt>
+                        <dd class="col-sm-8" th:text="${employee.phone()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            <span th:if="${employee.active()}" class="badge bg-success">Active</span>
+                            <span th:unless="${employee.active()}" class="badge bg-secondary">Inactive</span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header fw-bold">Employment Details</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Department</dt>
+                        <dd class="col-sm-8" th:text="${employee.departmentName()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Position</dt>
+                        <dd class="col-sm-8" th:text="${employee.position()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Hire Date</dt>
+                        <dd class="col-sm-8" th:text="${employee.hireDate()}"></dd>
+
+                        <dt class="col-sm-4">Termination</dt>
+                        <dd class="col-sm-8" th:text="${employee.terminationDate()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Salary</dt>
+                        <dd class="col-sm-8" th:text="${employee.salary() != null} ? 'CHF ' + ${#numbers.formatDecimal(employee.salary(), 1, 2)} : '—'"></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white fw-bold">Danger Zone</div>
+        <div class="card-body">
+            <form th:action="@{/app/hr/employees/{id}/delete(id=${employee.id()})}" method="post"
+                  onsubmit="return confirm('Are you sure?');">
+                <button type="submit" class="btn btn-outline-danger" th:text="#{common.delete}">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

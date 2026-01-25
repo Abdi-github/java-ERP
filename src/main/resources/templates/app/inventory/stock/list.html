@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>Lagerbestand</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="#{inventory.stockLevel}">Stock Levels</h1>
+        <div>
+            <a th:href="@{/app/inventory/stock/movements}" class="btn btn-outline-secondary me-2">
+                Lagerbewegungen
+            </a>
+            <a th:href="@{/app/inventory/stock/movements/new}" class="btn btn-primary">
+                Neue Bewegung
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover" data-dt data-dt-paging="false">
+            <thead class="table-dark">
+            <tr>
+                <th>Lager</th>
+                <th>Artikel-Typ</th>
+                <th>Artikel-ID</th>
+                <th>Verfügbar</th>
+                <th>Reserviert</th>
+                <th>Gesamt</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="sl : ${stockLevels.content}">
+                <td>
+                    <span th:text="${sl.warehouseCode()}">WH-01</span>
+                    <small class="text-muted ms-1" th:text="${sl.warehouseName()}">Main</small>
+                </td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${sl.itemType().name() == 'PRODUCT'} ? 'bg-primary' : 'bg-secondary'"
+                          th:text="${sl.itemType()}">PRODUCT</span>
+                </td>
+                <td><code th:text="${#strings.abbreviate(sl.itemId().toString(), 13)}">uuid...</code></td>
+                <td th:text="${sl.quantityAvailable()}">0.0000</td>
+                <td th:text="${sl.quantityReserved()}">0.0000</td>
+                <td th:text="${sl.quantityOnHand()}">0.0000</td>
+            </tr>
+            <tr th:if="${stockLevels.content.isEmpty()}">
+                <td colspan="6" class="text-center text-muted" th:text="#{common.noResults}">No results</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav th:if="${stockLevels.totalPages > 1}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${stockLevels.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/app/inventory/stock(page=${stockLevels.number - 1})}">«</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, stockLevels.totalPages - 1)}"
+                th:classappend="${i == stockLevels.number} ? 'active'">
+                <a class="page-link" th:href="@{/app/inventory/stock(page=${i})}"
+                   th:text="${i + 1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${stockLevels.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/app/inventory/stock(page=${stockLevels.number + 1})}">»</a>
+            </li>
+        </ul>
+    </nav>
+
+</div>
+</body>
+</html>
+

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="#{notification.title}">Benachrichtigungen</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-bell"></i>
+            <span th:text="#{notification.title}">Benachrichtigungen</span>
+            <span class="badge bg-primary ms-2" th:if="${unreadCount > 0}" th:text="${unreadCount}">0</span>
+        </h2>
+        <form th:action="@{/app/notifications/read-all}" method="post" th:if="${unreadCount > 0}">
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-check2-all"></i>
+                <span th:text="#{notification.markAllRead}">Alle als gelesen markieren</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Empty state -->
+    <div th:if="${notifications.isEmpty()}" class="text-center text-muted py-5">
+        <h4>🔔</h4>
+        <p th:text="#{notification.empty}">Keine Benachrichtigungen vorhanden.</p>
+    </div>
+
+    <!-- Notification list -->
+    <div class="list-group" th:if="${!notifications.isEmpty()}">
+        <div th:each="n : ${notifications}"
+             class="list-group-item list-group-item-action"
+             th:classappend="${n.status().name() == 'PENDING' || n.status().name() == 'SENT'} ? 'list-group-item-light fw-semibold' : ''">
+            <div class="d-flex w-100 justify-content-between">
+                <div>
+                    <span th:if="${n.status().name() == 'PENDING' || n.status().name() == 'SENT'}"
+                          class="badge bg-primary me-2" th:text="#{notification.unread}">Ungelesen</span>
+                    <span th:if="${n.status().name() == 'READ'}"
+                          class="badge bg-secondary me-2" th:text="#{notification.read}">Gelesen</span>
+                    <span th:if="${n.status().name() == 'FAILED'}"
+                          class="badge bg-danger me-2" th:text="#{notification.failed}">Fehlgeschlagen</span>
+                    <span th:if="${n.status().name() == 'DISMISSED'}"
+                          class="badge bg-light text-muted me-2" th:text="#{notification.dismissed}">Verworfen</span>
+                    <strong th:if="${n.subject()}" th:text="${n.subject()}">Subject</strong>
+                </div>
+                <small class="text-muted" th:text="${#temporals.format(n.createdAt(), 'dd.MM.yyyy HH:mm')}">01.01.2026 08:00</small>
+            </div>
+            <p class="mb-1 mt-1" th:if="${n.body()}" th:text="${n.body()}">Body text</p>
+            <div class="d-flex gap-2 mt-2">
+                <span class="badge bg-info text-dark" th:text="${n.channel()}">EMAIL</span>
+                <span th:if="${n.referenceType()}" class="badge bg-secondary" th:text="${n.referenceType()}">SALES_ORDER</span>
+                <div class="ms-auto" th:if="${n.status().name() == 'PENDING' || n.status().name() == 'SENT'}">
+                    <form th:action="@{/app/notifications/{id}/read(id=${n.id()})}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-success" th:text="#{notification.markRead}">Als gelesen</button>
+                    </form>
+                    <form th:action="@{/app/notifications/{id}/dismiss(id=${n.id()})}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary" th:text="#{notification.dismiss}">Verwerfen</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div th:replace="~{fragments/pagination :: pagination(${notifications})}"></div>
+</div>
+</body>
+</html>
+

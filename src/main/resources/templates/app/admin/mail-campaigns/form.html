@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="#{campaign.create}">Neue Kampagne</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-megaphone"></i>
+            <span th:text="#{campaign.create}">Neue Mail-Kampagne erstellen</span>
+        </h2>
+        <a th:href="@{/app/admin/mail-campaigns}" class="btn btn-outline-secondary" th:text="#{common.back}">Zurück</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form th:action="@{/app/admin/mail-campaigns}" method="post" th:object="${campaign}">
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label" th:text="#{campaign.name}">Name</label>
+                            <input type="text" class="form-control" id="name" th:field="*{name}" required
+                                   th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"/>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Error</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label" th:text="#{campaign.description}">Beschreibung</label>
+                            <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="templateCode" class="form-label" th:text="#{campaign.template}">Template Code</label>
+                                <input type="text" class="form-control" id="templateCode" th:field="*{templateCode}" required
+                                       placeholder="e.g. CAMPAIGN_NEWSLETTER"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="locale" class="form-label">Locale</label>
+                                <select class="form-select" id="locale" th:field="*{locale}">
+                                    <option value="de">Deutsch (de)</option>
+                                    <option value="fr">Français (fr)</option>
+                                    <option value="it">Italiano (it)</option>
+                                    <option value="en">English (en)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="targetSegment" class="form-label" th:text="#{campaign.segment}">Zielgruppe</label>
+                                <select class="form-select" id="targetSegment" th:field="*{targetSegment}">
+                                    <option value="ALL_USERS">Alle Benutzer</option>
+                                    <option value="ROLE_ADMIN">Administratoren</option>
+                                    <option value="ROLE_MANAGER">Manager</option>
+                                    <option value="ROLE_SALES">Verkauf</option>
+                                    <option value="ROLE_PRODUCTION">Produktion</option>
+                                    <option value="ROLE_WAREHOUSE">Lager</option>
+                                    <option value="ROLE_ACCOUNTANT">Buchhaltung</option>
+                                    <option value="ROLE_HR">Personal</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="scheduledAt" class="form-label" th:text="#{campaign.scheduledAt}">Geplant</label>
+                                <input type="datetime-local" class="form-control" id="scheduledAt" th:field="*{scheduledAt}"/>
+                                <small class="form-text text-muted">Leer lassen für sofortige Versendung nach Freigabe.</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="subjectOverride" class="form-label" th:text="#{campaign.subjectOverride}">Betreff (optional)</label>
+                            <input type="text" class="form-control" id="subjectOverride" th:field="*{subjectOverride}"
+                                   placeholder="Überschreibt den Template-Betreff"/>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" th:text="#{common.save}">Speichern</button>
+                            <a th:href="@{/app/admin/mail-campaigns}" class="btn btn-outline-secondary" th:text="#{common.cancel}">Abbrechen</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

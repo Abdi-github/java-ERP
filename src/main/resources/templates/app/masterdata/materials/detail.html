@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="${material.name()}">Material Detail</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/app/masterdata/materials}">Materials</a></li>
+            <li class="breadcrumb-item active" th:text="${material.sku()}">SKU</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="${material.name()}">Material Name</h1>
+        <div>
+            <a th:href="@{/app/masterdata/materials/{id}/edit(id=${material.id()})}"
+               class="btn btn-primary" th:text="#{common.edit}">Edit</a>
+            <form th:action="@{/app/masterdata/materials/{id}/delete(id=${material.id()})}"
+                  method="post" class="d-inline"
+                  onsubmit="return confirm('Are you sure?')">
+                <button type="submit" class="btn btn-outline-danger" th:text="#{common.delete}">Delete</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Material Details</h5></div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">SKU</div>
+                        <div class="col-md-8" th:text="${material.sku()}"></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Name</div>
+                        <div class="col-md-8" th:text="${material.name()}"></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Category</div>
+                        <div class="col-md-8" th:text="${material.categoryName()} ?: '—'"></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Unit of Measure</div>
+                        <div class="col-md-8" th:text="${material.unitOfMeasureCode()} ?: '—'"></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Description</div>
+                        <div class="col-md-8" th:text="${material.description()} ?: '—'"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Pricing & Stock</h5></div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6 fw-bold">Unit Price</div>
+                        <div class="col-6 text-end" th:attr="data-chf=${material.unitPrice()}">
+                            <span th:text="'CHF ' + ${#numbers.formatDecimal(material.unitPrice(), 1, 2)}"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6 fw-bold">VAT</div>
+                        <div class="col-6 text-end" th:text="${material.vatRate()}"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 fw-bold">Min. Stock</div>
+                        <div class="col-6 text-end" th:text="${#numbers.formatDecimal(material.minimumStock(), 1, 2)}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+

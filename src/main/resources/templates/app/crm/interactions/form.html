@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="#{crm.addInteraction}">New Interaction</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <h1 th:text="#{crm.addInteraction}">New Interaction</h1>
+
+    <form th:action="@{/app/crm/interactions}" th:object="${interactionRequest}" method="post" class="mt-4"
+          style="max-width: 800px;">
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" th:text="#{crm.contactName}">Contact</label>
+                        <input type="text" class="form-control" th:field="*{contactId}"
+                               th:classappend="${#fields.hasErrors('contactId')} ? 'is-invalid'"
+                               placeholder="Contact UUID"/>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('contactId')}" th:errors="*{contactId}"></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" th:text="#{crm.interactionType}">Type</label>
+                        <select class="form-select" th:field="*{interactionType}"
+                                th:classappend="${#fields.hasErrors('interactionType')} ? 'is-invalid'">
+                            <option value="">-- Select --</option>
+                            <option th:each="type : ${interactionTypes}" th:value="${type}" th:text="${type}"></option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('interactionType')}" th:errors="*{interactionType}"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" th:text="#{crm.subject}">Subject</label>
+                    <input type="text" class="form-control" th:field="*{subject}"
+                           th:classappend="${#fields.hasErrors('subject')} ? 'is-invalid'"/>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('subject')}" th:errors="*{subject}"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" th:field="*{description}" rows="4"></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" th:text="#{crm.interactionDate}">Interaction Date</label>
+                        <input type="datetime-local" class="form-control" th:field="*{interactionDate}"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" th:text="#{crm.followUpDate}">Follow-up Date</label>
+                        <input type="date" class="form-control" th:field="*{followUpDate}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+            <a th:href="@{/app/crm/contacts}" class="btn btn-outline-secondary" th:text="#{common.cancel}">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>
+

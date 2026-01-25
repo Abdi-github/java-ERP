@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title>New Journal Entry</title></head>
+<body>
+<div layout:fragment="content">
+    <h1>New Journal Entry</h1>
+
+    <form th:action="@{/app/accounting/journal-entries}" method="post" class="mt-4">
+
+        <div class="card mb-4">
+            <div class="card-header fw-bold">Entry Details</div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Entry Date *</label>
+                        <input type="date" name="entryDate" class="form-control" required/>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Description *</label>
+                        <input type="text" name="description" class="form-control" required/>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Reference</label>
+                        <input type="text" name="reference" class="form-control"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-bold">Lines</span>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addLine()">+ Add Line</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="linesTable">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Account *</th>
+                        <th>Description</th>
+                        <th class="text-end">Debit (CHF)</th>
+                        <th class="text-end">Credit (CHF)</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody id="linesBody">
+                    <tr>
+                        <td>1</td>
+                        <td>
+                            <select name="lines[0].accountId" class="form-select form-select-sm" required>
+                                <option value="">-- Account --</option>
+                                <option th:each="a : ${accounts}" th:value="${a.id()}"
+                                        th:text="${a.accountNumber() + ' — ' + a.name()}"></option>
+                            </select>
+                        </td>
+                        <td><input type="text" name="lines[0].description" class="form-control form-control-sm"/></td>
+                        <td><input type="number" step="0.0001" name="lines[0].debit" class="form-control form-control-sm text-end" value="0.0000"/></td>
+                        <td><input type="number" step="0.0001" name="lines[0].credit" class="form-control form-control-sm text-end" value="0.0000"/></td>
+                        <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeLine(this)">✕</button></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>
+                            <select name="lines[1].accountId" class="form-select form-select-sm" required>
+                                <option value="">-- Account --</option>
+                                <option th:each="a : ${accounts}" th:value="${a.id()}"
+                                        th:text="${a.accountNumber() + ' — ' + a.name()}"></option>
+                            </select>
+                        </td>
+                        <td><input type="text" name="lines[1].description" class="form-control form-control-sm"/></td>
+                        <td><input type="number" step="0.0001" name="lines[1].debit" class="form-control form-control-sm text-end" value="0.0000"/></td>
+                        <td><input type="number" step="0.0001" name="lines[1].credit" class="form-control form-control-sm text-end" value="0.0000"/></td>
+                        <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeLine(this)">✕</button></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+            <a th:href="@{/app/accounting/journal-entries}" class="btn btn-secondary" th:text="#{common.cancel}">Cancel</a>
+        </div>
+    </form>
+
+    <script th:inline="javascript">
+        var lineIndex = 2;
+        var accountOptions = /*[[${accountOptionsHtml}]]*/ '';
+
+        function addLine() {
+            var tbody = document.getElementById('linesBody');
+            var row = document.createElement('tr');
+            row.innerHTML =
+                '<td>' + (lineIndex + 1) + '</td>' +
+                '<td><select name="lines[' + lineIndex + '].accountId" class="form-select form-select-sm" required>' +
+                document.querySelector('#linesBody select').innerHTML +
+                '</select></td>' +
+                '<td><input type="text" name="lines[' + lineIndex + '].description" class="form-control form-control-sm"/></td>' +
+                '<td><input type="number" step="0.0001" name="lines[' + lineIndex + '].debit" class="form-control form-control-sm text-end" value="0.0000"/></td>' +
+                '<td><input type="number" step="0.0001" name="lines[' + lineIndex + '].credit" class="form-control form-control-sm text-end" value="0.0000"/></td>' +
+                '<td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeLine(this)">✕</button></td>';
+            tbody.appendChild(row);
+            lineIndex++;
+        }
+
+        function removeLine(btn) {
+            var tbody = document.getElementById('linesBody');
+            if (tbody.rows.length > 2) {
+                btn.closest('tr').remove();
+            }
+        }
+    </script>
+</div>
+</body>
+</html>
+

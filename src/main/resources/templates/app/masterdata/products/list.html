@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="#{nav.products}">Products</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="#{nav.products}">Products</h1>
+        <a th:href="@{/app/masterdata/products/new}" class="btn btn-primary">
+            ➕ <span th:text="#{common.create}">Create</span>
+        </a>
+    </div>
+
+    <!-- Search -->
+    <form class="row g-3 mb-4" th:action="@{/app/masterdata/products}" method="get">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control"
+                       th:placeholder="#{common.search}" th:value="${search}"/>
+                <button class="btn btn-outline-secondary" type="submit" th:text="#{common.search}">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Products Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" data-dt data-dt-paging="false">
+                <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th th:text="#{product.name}">Name</th>
+                    <th th:text="#{product.category}">Category</th>
+                    <th class="text-end" th:text="#{product.unitPrice}">Unit Price</th>
+                    <th class="text-end" th:text="#{product.listPrice}">List Price</th>
+                    <th th:text="#{product.vat}">VAT</th>
+                    <th>Status</th>
+                    <th th:text="#{common.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="product : ${products.content}">
+                    <td>
+                        <a th:href="@{/app/masterdata/products/{id}(id=${product.id()})}"
+                           th:text="${product.sku()}" class="fw-bold text-decoration-none"></a>
+                    </td>
+                    <td th:text="${product.name()}"></td>
+                    <td th:text="${product.categoryName()} ?: '—'"></td>
+                    <td class="text-end" th:attr="data-chf=${product.unitPrice()}">
+                        <span th:text="'CHF ' + ${#numbers.formatDecimal(product.unitPrice(), 1, 2)}"></span>
+                    </td>
+                    <td class="text-end" th:attr="data-chf=${product.listPrice()}">
+                        <span th:text="'CHF ' + ${#numbers.formatDecimal(product.listPrice(), 1, 2)}"></span>
+                    </td>
+                    <td th:text="${product.vatRate()}"></td>
+                    <td>
+                        <span th:if="${product.active()}" class="badge bg-success">Active</span>
+                        <span th:unless="${product.active()}" class="badge bg-secondary">Inactive</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/app/masterdata/products/{id}/edit(id=${product.id()})}"
+                           class="btn btn-sm btn-outline-primary" th:text="#{common.edit}">Edit</a>
+                    </td>
+                </tr>
+                <tr th:if="${products.content.isEmpty()}">
+                    <td colspan="8" class="text-center text-muted py-4" th:text="#{common.noResults}">
+                        No results found
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer d-flex justify-content-between align-items-center" th:if="${products.totalPages > 1}">
+            <small class="text-muted"
+                   th:text="'Page ' + ${products.number + 1} + ' of ' + ${products.totalPages} + ' (' + ${products.totalElements} + ' total)'">
+            </small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${products.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/masterdata/products(page=${products.number - 1}, search=${search})}">‹</a>
+                    </li>
+                    <li class="page-item" th:classappend="${products.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/masterdata/products(page=${products.number + 1}, search=${search})}">›</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+

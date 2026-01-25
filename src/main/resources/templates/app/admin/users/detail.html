@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title>User Details</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="${user.displayName()}">User</h1>
+        <div>
+            <a th:href="@{/app/admin/users/{id}/edit(id=${user.id()})}"
+               class="btn btn-outline-primary" th:text="#{common.edit}">Edit</a>
+            <a th:href="@{/app/admin/users}" class="btn btn-outline-secondary" th:text="#{common.back}">Back</a>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3" th:text="#{auth.username}">Username</dt>
+                <dd class="col-sm-9" th:text="${user.username()}"></dd>
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9" th:text="${user.email()}"></dd>
+                <dt class="col-sm-3" th:text="#{auth.displayName}">Name</dt>
+                <dd class="col-sm-9" th:text="${user.displayName()}"></dd>
+                <dt class="col-sm-3" th:text="#{auth.roles}">Roles</dt>
+                <dd class="col-sm-9">
+                    <span th:each="role : ${user.roles()}" class="badge bg-info me-1" th:text="${role}"></span>
+                </dd>
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">
+                    <span th:if="${user.enabled()}" class="badge bg-success">Active</span>
+                    <span th:unless="${user.enabled()}" class="badge bg-secondary">Disabled</span>
+                    <span th:if="${user.locked()}" class="badge bg-danger ms-1">Locked</span>
+                </dd>
+            </dl>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

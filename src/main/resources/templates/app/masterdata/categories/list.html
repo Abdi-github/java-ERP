@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>Categories</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Categories</h1>
+        <a th:href="@{/app/masterdata/categories/new}" class="btn btn-primary">
+            ➕ <span th:text="#{common.create}">Create</span>
+        </a>
+    </div>
+
+    <!-- Search -->
+    <form class="row g-3 mb-4" th:action="@{/app/masterdata/categories}" method="get">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control"
+                       th:placeholder="#{common.search}" th:value="${search}"/>
+                <button class="btn btn-outline-secondary" type="submit" th:text="#{common.search}">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" data-dt data-dt-paging="false">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Parent</th>
+                    <th>Description</th>
+                    <th th:text="#{common.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="cat : ${categories.content}">
+                    <td class="fw-bold" th:text="${cat.name()}"></td>
+                    <td th:text="${cat.parentName()} ?: '—'"></td>
+                    <td th:text="${cat.description()} ?: '—'" class="text-muted"></td>
+                    <td>
+                        <a th:href="@{/app/masterdata/categories/{id}/edit(id=${cat.id()})}"
+                           class="btn btn-sm btn-outline-primary" th:text="#{common.edit}">Edit</a>
+                        <form th:action="@{/app/masterdata/categories/{id}/delete(id=${cat.id()})}"
+                              method="post" class="d-inline"
+                              onsubmit="return confirm('Are you sure?')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" th:text="#{common.delete}">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${categories.content.isEmpty()}">
+                    <td colspan="4" class="text-center text-muted py-4" th:text="#{common.noResults}">No results found</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer d-flex justify-content-between align-items-center" th:if="${categories.totalPages > 1}">
+            <small class="text-muted"
+                   th:text="'Page ' + ${categories.number + 1} + ' of ' + ${categories.totalPages}">
+            </small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${categories.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/masterdata/categories(page=${categories.number - 1}, search=${search})}">‹</a>
+                    </li>
+                    <li class="page-item" th:classappend="${categories.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/masterdata/categories(page=${categories.number + 1}, search=${search})}">›</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+

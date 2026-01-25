@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="#{crm.contacts}">Contacts</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="#{crm.contacts}">Contacts</h1>
+        <a th:href="@{/app/crm/contacts/new}" class="btn btn-primary">
+            ➕ <span th:text="#{common.create}">Create</span>
+        </a>
+    </div>
+
+    <!-- Search -->
+    <form class="row g-3 mb-4" th:action="@{/app/crm/contacts}" method="get">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control"
+                       th:placeholder="#{common.search}" th:value="${search}"/>
+                <button class="btn btn-outline-secondary" type="submit" th:text="#{common.search}">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Contacts Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" data-dt data-dt-paging="false">
+                <thead>
+                <tr>
+                    <th th:text="#{crm.contactName}">Name</th>
+                    <th>E-Mail</th>
+                    <th th:text="#{crm.company}">Company</th>
+                    <th th:text="#{crm.position}">Position</th>
+                    <th>Status</th>
+                    <th th:text="#{common.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${contacts.content}">
+                    <td>
+                        <a th:href="@{/app/crm/contacts/{id}(id=${c.id()})}"
+                           th:text="${c.fullName()}" class="fw-bold text-decoration-none"></a>
+                    </td>
+                    <td th:text="${c.email()} ?: '—'"></td>
+                    <td th:text="${c.company()} ?: '—'"></td>
+                    <td th:text="${c.position()} ?: '—'"></td>
+                    <td>
+                        <span th:if="${c.active()}" class="badge bg-success">Active</span>
+                        <span th:unless="${c.active()}" class="badge bg-secondary">Inactive</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/app/crm/contacts/{id}/edit(id=${c.id()})}"
+                           class="btn btn-sm btn-outline-primary" th:text="#{common.edit}">Edit</a>
+                    </td>
+                </tr>
+                <tr th:if="${contacts.content.isEmpty()}">
+                    <td colspan="6" class="text-center text-muted py-4" th:text="#{common.noResults}">
+                        No results found
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer d-flex justify-content-between align-items-center" th:if="${contacts.totalPages > 1}">
+            <span th:text="|Page ${contacts.number + 1} of ${contacts.totalPages}|"></span>
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${contacts.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/crm/contacts(page=${contacts.number - 1}, search=${search})}">‹</a>
+                    </li>
+                    <li class="page-item" th:classappend="${contacts.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/crm/contacts(page=${contacts.number + 1}, search=${search})}">›</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

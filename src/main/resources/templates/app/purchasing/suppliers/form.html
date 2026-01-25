@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title th:text="${editMode} ? 'Lieferant bearbeiten' : 'Neuer Lieferant'">Supplier Form</title></head>
+<body>
+<div layout:fragment="content">
+    <h1 th:text="${editMode} ? 'Lieferant bearbeiten' : 'Neuer Lieferant'">Supplier Form</h1>
+    <form th:action="${editMode} ? @{/app/purchasing/suppliers/{id}(id=${supplierId})} : @{/app/purchasing/suppliers}"
+          th:object="${supplierRequest}" method="post" class="mt-4">
+        <div class="row">
+            <div class="col-md-6"><div class="card mb-4"><div class="card-header fw-bold">Contact</div><div class="card-body">
+                <div class="mb-3"><label class="form-label">Supplier Number</label><input type="text" class="form-control" th:field="*{supplierNumber}" placeholder="Auto-generated if empty"/></div>
+                <div class="mb-3"><label class="form-label">Company Name</label><input type="text" class="form-control" th:field="*{companyName}"/></div>
+                <div class="row"><div class="col-md-6 mb-3"><label class="form-label">First Name</label><input type="text" class="form-control" th:field="*{firstName}"/></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Last Name</label><input type="text" class="form-control" th:field="*{lastName}"/></div></div>
+                <div class="mb-3"><label class="form-label">Contact Person</label><input type="text" class="form-control" th:field="*{contactPerson}"/></div>
+                <div class="mb-3"><label class="form-label">E-Mail</label><input type="email" class="form-control" th:field="*{email}"/></div>
+                <div class="mb-3"><label class="form-label">Phone</label><input type="text" class="form-control" th:field="*{phone}"/></div>
+                <div class="mb-3"><label class="form-label">Website</label><input type="url" class="form-control" th:field="*{website}"/></div>
+            </div></div></div>
+            <div class="col-md-6"><div class="card mb-4"><div class="card-header fw-bold">Address & Terms</div><div class="card-body">
+                <div class="mb-3"><label class="form-label">Street</label><input type="text" class="form-control" th:field="*{street}"/></div>
+                <div class="row"><div class="col-md-4 mb-3"><label class="form-label">Postal Code</label><input type="text" class="form-control" th:field="*{postalCode}"/></div>
+                    <div class="col-md-8 mb-3"><label class="form-label">City</label><input type="text" class="form-control" th:field="*{city}"/></div></div>
+                <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Canton</label><input type="text" class="form-control" th:field="*{canton}"/></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Country</label><input type="text" class="form-control" th:field="*{country}" value="CH"/></div></div>
+                <div class="mb-3"><label class="form-label">VAT Number</label><input type="text" class="form-control" th:field="*{vatNumber}" placeholder="CHE-123.456.789 MWST"/></div>
+                <div class="mb-3"><label class="form-label">Payment Terms (days)</label><input type="number" class="form-control" th:field="*{paymentTerms}" value="30"/></div>
+            </div></div></div>
+        </div>
+        <div class="card mb-4"><div class="card-body">
+            <div class="mb-3"><label class="form-label">Notes</label><textarea class="form-control" th:field="*{notes}" rows="3"></textarea></div>
+            <div class="form-check"><input type="checkbox" class="form-check-input" th:field="*{active}" id="active"/><label class="form-check-label" for="active">Active</label></div>
+        </div></div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+            <a th:href="@{/app/purchasing/suppliers}" class="btn btn-outline-secondary" th:text="#{common.cancel}">Cancel</a>
+        </div>
+    </form>
+</div>
+</body></html>
+

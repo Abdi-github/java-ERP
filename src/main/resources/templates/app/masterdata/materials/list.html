@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>Materials</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Materials</h1>
+        <a th:href="@{/app/masterdata/materials/new}" class="btn btn-primary">
+            ➕ <span th:text="#{common.create}">Create</span>
+        </a>
+    </div>
+
+    <form class="row g-3 mb-4" th:action="@{/app/masterdata/materials}" method="get">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control"
+                       th:placeholder="#{common.search}" th:value="${search}"/>
+                <button class="btn btn-outline-secondary" type="submit" th:text="#{common.search}">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" data-dt data-dt-paging="false">
+                <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>UoM</th>
+                    <th class="text-end">Unit Price</th>
+                    <th>VAT</th>
+                    <th class="text-end">Min. Stock</th>
+                    <th th:text="#{common.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="mat : ${materials.content}">
+                    <td>
+                        <a th:href="@{/app/masterdata/materials/{id}(id=${mat.id()})}"
+                           th:text="${mat.sku()}" class="fw-bold text-decoration-none"></a>
+                    </td>
+                    <td th:text="${mat.name()}"></td>
+                    <td th:text="${mat.categoryName()} ?: '—'"></td>
+                    <td th:text="${mat.unitOfMeasureCode()} ?: '—'"></td>
+                    <td class="text-end" th:attr="data-chf=${mat.unitPrice()}">
+                        <span th:text="'CHF ' + ${#numbers.formatDecimal(mat.unitPrice(), 1, 2)}"></span>
+                    </td>
+                    <td th:text="${mat.vatRate()}"></td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(mat.minimumStock(), 1, 2)}"></td>
+                    <td>
+                        <a th:href="@{/app/masterdata/materials/{id}/edit(id=${mat.id()})}"
+                           class="btn btn-sm btn-outline-primary" th:text="#{common.edit}">Edit</a>
+                    </td>
+                </tr>
+                <tr th:if="${materials.content.isEmpty()}">
+                    <td colspan="8" class="text-center text-muted py-4" th:text="#{common.noResults}">No results found</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer d-flex justify-content-between align-items-center" th:if="${materials.totalPages > 1}">
+            <small class="text-muted"
+                   th:text="'Page ' + ${materials.number + 1} + ' of ' + ${materials.totalPages}">
+            </small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${materials.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/masterdata/materials(page=${materials.number - 1}, search=${search})}">‹</a>
+                    </li>
+                    <li class="page-item" th:classappend="${materials.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/masterdata/materials(page=${materials.number + 1}, search=${search})}">›</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+

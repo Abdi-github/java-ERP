@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title th:text="${editMode} ? 'Edit Inspection Plan' : 'New Inspection Plan'">Inspection Plan Form</title></head>
+<body>
+<div layout:fragment="content">
+    <h1 th:text="${editMode} ? 'Edit Inspection Plan' : 'New Inspection Plan'">Inspection Plan Form</h1>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <form th:action="${editMode} ? @{/app/quality-control/inspection-plans/{id}(id=${planId})} : @{/app/quality-control/inspection-plans}"
+                  th:object="${planRequest}" method="post" style="max-width: 700px;">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Plan Number *</label>
+                        <input type="text" class="form-control" th:field="*{planNumber}"
+                               th:classappend="${#fields.hasErrors('planNumber')} ? 'is-invalid'"/>
+                        <div class="invalid-feedback" th:errors="*{planNumber}"></div>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Name *</label>
+                        <input type="text" class="form-control" th:field="*{name}"
+                               th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"/>
+                        <div class="invalid-feedback" th:errors="*{name}"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" th:field="*{description}" rows="3"></textarea>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Product ID</label>
+                        <input type="text" class="form-control" th:field="*{productId}" placeholder="UUID"/>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Material ID</label>
+                        <input type="text" class="form-control" th:field="*{materialId}" placeholder="UUID"/>
+                    </div>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" th:field="*{active}" id="activeCheck"/>
+                    <label class="form-check-label" for="activeCheck">Active</label>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
+                    <a th:href="@{/app/quality-control/inspection-plans}" class="btn btn-secondary" th:text="#{common.cancel}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

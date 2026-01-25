@@ -1,0 +1,18 @@
+<!-- Reusable pagination fragment for Bootstrap 5 + Spring Data Page -->
+<div th:fragment="pagination(page, baseUrl)" xmlns:th="http://www.thymeleaf.org">
+    <nav th:if="${page.totalPages > 1}" aria-label="Pagination">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+                <a class="page-link" th:href="@{${baseUrl}(page=${page.number - 1},size=${page.size})}">&laquo;</a>
+            </li>
+            <li th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}" class="page-item"
+                th:classappend="${i == page.number} ? 'active'">
+                <a class="page-link" th:href="@{${baseUrl}(page=${i},size=${page.size})}" th:text="${i + 1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+                <a class="page-link" th:href="@{${baseUrl}(page=${page.number + 1},size=${page.size})}">&raquo;</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+

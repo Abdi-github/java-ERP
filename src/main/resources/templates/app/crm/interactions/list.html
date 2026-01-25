@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="#{crm.interactions}">Interactions</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="#{crm.interactions}">Interactions</h1>
+        <a th:href="@{/app/crm/interactions/new}" class="btn btn-primary">
+            ➕ <span th:text="#{crm.addInteraction}">Add Interaction</span>
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" data-dt data-dt-paging="false">
+                <thead>
+                <tr>
+                    <th th:text="#{crm.interactionDate}">Date</th>
+                    <th th:text="#{crm.interactionType}">Type</th>
+                    <th th:text="#{crm.contactName}">Contact</th>
+                    <th th:text="#{crm.subject}">Subject</th>
+                    <th th:text="#{crm.followUpDate}">Follow-up</th>
+                    <th th:text="#{common.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="i : ${interactions.content}">
+                    <td th:text="${i.interactionDate()}"></td>
+                    <td><span class="badge bg-info" th:text="${i.interactionType()}"></span></td>
+                    <td>
+                        <a th:href="@{/app/crm/contacts/{id}(id=${i.contactId()})}"
+                           th:text="${i.contactName()}" class="text-decoration-none"></a>
+                    </td>
+                    <td th:text="${i.subject()}"></td>
+                    <td th:text="${i.followUpDate()} ?: '—'"></td>
+                    <td>
+                        <a th:href="@{/app/crm/interactions/{id}(id=${i.id()})}"
+                           class="btn btn-sm btn-outline-primary">View</a>
+                    </td>
+                </tr>
+                <tr th:if="${interactions.content.isEmpty()}">
+                    <td colspan="6" class="text-center text-muted py-4" th:text="#{common.noResults}">
+                        No interactions found
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer d-flex justify-content-between align-items-center" th:if="${interactions.totalPages > 1}">
+            <span th:text="|Page ${interactions.number + 1} of ${interactions.totalPages}|"></span>
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${interactions.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/crm/interactions(page=${interactions.number - 1})}">‹</a>
+                    </li>
+                    <li class="page-item" th:classappend="${interactions.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/app/crm/interactions(page=${interactions.number + 1})}">›</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

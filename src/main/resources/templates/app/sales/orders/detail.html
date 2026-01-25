@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="${order.orderNumber()}">Sales Order Detail</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 th:text="${order.orderNumber()}">SO-2026-00001</h1>
+            <span class="badge fs-6"
+                  th:classappend="${order.status().name() == 'DRAFT' ? 'bg-secondary' :
+                                   order.status().name() == 'CONFIRMED' ? 'bg-primary' :
+                                   order.status().name() == 'PROCESSING' ? 'bg-info' :
+                                   order.status().name() == 'SHIPPED' ? 'bg-warning text-dark' :
+                                   order.status().name() == 'DELIVERED' ? 'bg-success' :
+                                   order.status().name() == 'COMPLETED' ? 'bg-dark' :
+                                   'bg-danger'}"
+                  th:text="${order.status()}"></span>
+        </div>
+        <div class="d-flex gap-2">
+            <!-- Status Actions -->
+            <form th:if="${order.status().name() == 'DRAFT'}"
+                  th:action="@{/app/sales/orders/{id}/confirm(id=${order.id()})}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-success">✔ Confirm</button>
+            </form>
+            <form th:if="${order.status().name() == 'CONFIRMED' or order.status().name() == 'PROCESSING' or order.status().name() == 'SHIPPED' or order.status().name() == 'DELIVERED'}"
+                  th:action="@{/app/sales/orders/{id}/advance(id=${order.id()})}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-info">⏭ Advance</button>
+            </form>
+            <form th:if="${order.status().name() != 'COMPLETED' and order.status().name() != 'CANCELLED'}"
+                  th:action="@{/app/sales/orders/{id}/cancel(id=${order.id()})}" method="post" class="d-inline"
+                  onsubmit="return confirm('Cancel this order?');">
+                <button type="submit" class="btn btn-outline-danger">✖ Cancel</button>
+            </form>
+
+            <a th:if="${order.status().name() == 'DRAFT'}"
+               th:href="@{/app/sales/orders/{id}/edit(id=${order.id()})}"
+               class="btn btn-outline-primary" th:text="#{common.edit}">Edit</a>
+            <a th:href="@{/app/sales/orders}" class="btn btn-outline-secondary" th:text="#{common.back}">Back</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Order Info -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header fw-bold">Order Information</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Order Number</dt>
+                        <dd class="col-sm-7" th:text="${order.orderNumber()}"></dd>
+
+                        <dt class="col-sm-5">Customer</dt>
+                        <dd class="col-sm-7">
+                            <a th:href="@{/app/sales/customers/{id}(id=${order.customerId()})}"
+                               th:text="${order.customerName()}"></a>
+                        </dd>
+
+                        <dt class="col-sm-5">Order Date</dt>
+                        <dd class="col-sm-7" th:text="${order.orderDate()}"></dd>
+
+                        <dt class="col-sm-5">Delivery Date</dt>
+                        <dd class="col-sm-7" th:text="${order.deliveryDate()} ?: '—'"></dd>
+
+                        <dt class="col-sm-5">Currency</dt>
+                        <dd class="col-sm-7" th:text="${order.currency()}"></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header fw-bold">Shipping Address</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Street</dt>
+                        <dd class="col-sm-8" th:text="${order.shippingStreet()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">City</dt>
+                        <dd class="col-sm-8" th:text="${(order.shippingPostalCode() ?: '') + ' ' + (order.shippingCity() ?: '')}"></dd>
+
+                        <dt class="col-sm-4">Canton</dt>
+                        <dd class="col-sm-8" th:text="${order.shippingCanton()} ?: '—'"></dd>
+
+                        <dt class="col-sm-4">Country</dt>
+                        <dd class="col-sm-8" th:text="${order.shippingCountry()} ?: 'CH'"></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Lines -->
+    <div class="card mb-4">
+        <div class="card-header fw-bold">Order Lines</div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Product</th>
+                    <th>Description</th>
+                    <th class="text-end">Qty</th>
+                    <th class="text-end">Unit Price</th>
+                    <th class="text-end">Discount</th>
+                    <th>VAT</th>
+                    <th class="text-end">Line Total</th>
+                    <th class="text-end">VAT Amount</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="line : ${order.lines()}">
+                    <td th:text="${line.position()}"></td>
+                    <td th:text="${line.productName()}"></td>
+                    <td th:text="${line.description()} ?: '—'"></td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(line.quantity(), 1, 2)}"></td>
+                    <td class="text-end" th:text="'CHF ' + ${#numbers.formatDecimal(line.unitPrice(), 1, 2)}"></td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(line.discountPct(), 1, 2)} + '%'"></td>
+                    <td th:text="${line.vatRate()}"></td>
+                    <td class="text-end fw-bold" th:text="'CHF ' + ${#numbers.formatDecimal(line.lineTotal(), 1, 2)}"></td>
+                    <td class="text-end" th:text="'CHF ' + ${#numbers.formatDecimal(line.vatAmount(), 1, 2)}"></td>
+                </tr>
+                <tr th:if="${order.lines().isEmpty()}">
+                    <td colspan="9" class="text-center text-muted py-3">No line items</td>
+                </tr>
+                </tbody>
+                <tfoot class="table-light">
+                <tr>
+                    <td colspan="7" class="text-end fw-bold">Subtotal</td>
+                    <td class="text-end fw-bold" th:text="'CHF ' + ${#numbers.formatDecimal(order.subtotal(), 1, 2)}"></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="7" class="text-end">VAT</td>
+                    <td class="text-end" th:text="'CHF ' + ${#numbers.formatDecimal(order.vatAmount(), 1, 2)}"></td>
+                    <td></td>
+                </tr>
+                <tr class="fs-5">
+                    <td colspan="7" class="text-end fw-bold">Total</td>
+                    <td class="text-end fw-bold" th:text="'CHF ' + ${#numbers.formatDecimal(order.totalAmount(), 1, 2)}"></td>
+                    <td></td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="card mb-4" th:if="${order.notes() != null and !order.notes().isBlank()}">
+        <div class="card-header fw-bold">Notes</div>
+        <div class="card-body" th:text="${order.notes()}"></div>
+    </div>
+
+    <!-- Delete (only DRAFT / CANCELLED) -->
+    <div class="card border-danger" th:if="${order.status().name() == 'DRAFT' or order.status().name() == 'CANCELLED'}">
+        <div class="card-header bg-danger text-white fw-bold">Danger Zone</div>
+        <div class="card-body">
+            <form th:action="@{/app/sales/orders/{id}/delete(id=${order.id()})}" method="post"
+                  onsubmit="return confirm('Permanently delete this order?');">
+                <button type="submit" class="btn btn-outline-danger" th:text="#{common.delete}">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

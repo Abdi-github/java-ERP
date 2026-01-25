@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="de"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- ── Header ────────────────────────────────────────────── -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0 fw-bold" th:text="#{nav.dashboard}">Dashboard</h1>
+            <small class="text-muted" th:text="#{dashboard.kpi.subtitle}">Swiss Watch Manufacturing &amp; Retail</small>
+        </div>
+        <span class="badge bg-light text-dark border px-3 py-2 fs-6"
+              th:text="${#temporals.format(#temporals.createNow(), 'dd.MM.yyyy HH:mm')}">01.01.2026 09:00</span>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         ROW 1 — KPI STAT CARDS
+         ══════════════════════════════════════════════════════ -->
+    <div class="row g-4 mb-4">
+
+        <!-- Open Sales Orders -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center gap-3 pb-2">
+                    <div class="rounded-3 p-3 bg-primary bg-opacity-10 flex-shrink-0">
+                        <i class="bi bi-cart3 fs-3 text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <p class="text-muted mb-1 small text-truncate" th:text="#{dashboard.openOrders}">Open Orders</p>
+                        <h2 class="mb-0 fw-bold lh-1" th:text="${stats.openSalesOrders}">—</h2>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0 pt-0 pb-2 px-3">
+                    <a th:href="@{/app/sales/orders}" class="text-primary text-decoration-none small">
+                        <i class="bi bi-arrow-right-short"></i> <span th:text="#{dashboard.viewAll}">View all</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Revenue -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center gap-3 pb-2">
+                    <div class="rounded-3 p-3 bg-success bg-opacity-10 flex-shrink-0">
+                        <i class="bi bi-currency-exchange fs-3 text-success"></i>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <p class="text-muted mb-1 small text-truncate" th:text="#{dashboard.revenue}">Revenue (MTD)</p>
+                        <h2 class="mb-0 fw-bold lh-1">
+                            <span class="fs-6 fw-normal text-muted">CHF </span>
+                            <span th:text="${#numbers.formatDecimal(stats.revenueThisMonth, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                        </h2>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0 pt-0 pb-2 px-3">
+                    <a th:href="@{/app/sales/orders}" class="text-success text-decoration-none small">
+                        <i class="bi bi-arrow-right-short"></i> <span th:text="#{dashboard.viewAll}">View all</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center gap-3 pb-2">
+                    <div class="rounded-3 p-3 bg-warning bg-opacity-10 flex-shrink-0">
+                        <i class="bi bi-exclamation-triangle fs-3 text-warning"></i>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <p class="text-muted mb-1 small text-truncate" th:text="#{dashboard.lowStock}">Low Stock Items</p>
+                        <h2 class="mb-0 fw-bold lh-1" th:text="${stats.lowStockItems}">—</h2>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0 pt-0 pb-2 px-3">
+                    <a th:href="@{/app/inventory/stock}" class="text-warning text-decoration-none small">
+                        <i class="bi bi-arrow-right-short"></i> <span th:text="#{dashboard.viewStock}">Review stock</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- In Production -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center gap-3 pb-2">
+                    <div class="rounded-3 p-3 bg-info bg-opacity-10 flex-shrink-0">
+                        <i class="bi bi-gear-wide-connected fs-3 text-info"></i>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <p class="text-muted mb-1 small text-truncate" th:text="#{dashboard.production}">In Production</p>
+                        <h2 class="mb-0 fw-bold lh-1" th:text="${stats.openProductionOrders}">—</h2>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0 pt-0 pb-2 px-3">
+                    <a th:href="@{/app/production/orders}" class="text-info text-decoration-none small">
+                        <i class="bi bi-arrow-right-short"></i> <span th:text="#{dashboard.viewAll}">View all</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /row KPI cards -->
+
+    <!-- ══════════════════════════════════════════════════════
+         ROW 2 — SECONDARY STATS (Purchasing KPIs)
+         ══════════════════════════════════════════════════════ -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6">
+            <div class="card border-0 bg-body-secondary h-100">
+                <div class="card-body py-3 d-flex align-items-center gap-3">
+                    <i class="bi bi-box-seam fs-4 text-secondary"></i>
+                    <div>
+                        <p class="text-muted mb-0 small" th:text="#{dashboard.openPurchaseOrders}">Open Purchase Orders</p>
+                        <span class="fw-bold fs-5" th:text="${stats.openPurchaseOrders}">—</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="card border-0 bg-body-secondary h-100">
+                <div class="card-body py-3 d-flex align-items-center gap-3">
+                    <i class="bi bi-wallet2 fs-4 text-secondary"></i>
+                    <div>
+                        <p class="text-muted mb-0 small" th:text="#{dashboard.spendMtd}">Spend (MTD)</p>
+                        <span class="fw-bold fs-5">CHF
+                            <span th:text="${#numbers.formatDecimal(stats.spendThisMonth, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         ROW 3 — CHARTS
+         ══════════════════════════════════════════════════════ -->
+    <div class="row g-4 mb-4">
+
+        <!-- Revenue Bar Chart -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold" th:text="#{dashboard.revenueChart}">Revenue — Last 6 Months (CHF)</h5>
+                    <span class="badge bg-success bg-opacity-10 text-success small">MTD</span>
+                </div>
+                <div class="card-body pt-0">
+                    <canvas id="revenueChart" height="110"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Doughnut Chart -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="mb-0 fw-semibold" th:text="#{dashboard.statusChart}">Order Status</h5>
+                </div>
+                <div class="card-body d-flex flex-column justify-content-center align-items-center pt-0">
+                    <canvas id="statusChart" width="220" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /row charts -->
+
+    <!-- ══════════════════════════════════════════════════════
+         ROW 4 — RECENT ORDERS TABLES
+         ══════════════════════════════════════════════════════ -->
+    <div class="row g-4 mb-4">
+
+        <!-- Recent Sales Orders -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 fw-semibold" th:text="#{dashboard.recentSalesOrders}">Recent Sales Orders</h5>
+                    <a th:href="@{/app/sales/orders}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-arrow-right me-1"></i><span th:text="#{dashboard.viewAll}">View All</span>
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Order #</th>
+                            <th>Customer</th>
+                            <th>Status</th>
+                            <th class="text-end">CHF</th>
+                            <th class="pe-3">Date</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(recentSalesOrders)}">
+                            <td colspan="5" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>
+                                <span th:text="#{dashboard.noOrders}">No orders yet</span>
+                            </td>
+                        </tr>
+                        <tr th:each="order : ${recentSalesOrders}">
+                            <td class="ps-3">
+                                <a th:href="@{/app/sales/orders/{id}(id=${order.id})}"
+                                   th:text="${order.orderNumber}"
+                                   class="text-decoration-none fw-medium text-primary">SO-0001</a>
+                            </td>
+                            <td class="text-truncate" style="max-width:150px" th:text="${order.customerName}">—</td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${salesStatusBadge.getOrDefault(order.status, 'bg-secondary')}"
+                                      th:text="${order.status}">DRAFT</span>
+                            </td>
+                            <td class="text-end fw-medium"
+                                th:text="${#numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+                            <td class="pe-3 text-muted small"
+                                th:text="${#temporals.format(order.orderDate, 'dd.MM.yyyy')}">01.01.2026</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Production Orders -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 fw-semibold" th:text="#{dashboard.recentProductionOrders}">Recent Production Orders</h5>
+                    <a th:href="@{/app/production/orders}" class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-arrow-right me-1"></i><span th:text="#{dashboard.viewAll}">View All</span>
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Order #</th>
+                            <th>Product</th>
+                            <th>Status</th>
+                            <th class="text-end pe-3">Qty</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(recentProductionOrders)}">
+                            <td colspan="4" class="text-center text-muted py-5">
+                                <i class="bi bi-gear fs-3 d-block mb-2 opacity-50"></i>
+                                <span th:text="#{dashboard.noProductionOrders}">No production orders yet</span>
+                            </td>
+                        </tr>
+                        <tr th:each="order : ${recentProductionOrders}">
+                            <td class="ps-3">
+                                <a th:href="@{/app/production/orders/{id}(id=${order.id})}"
+                                   th:text="${order.orderNumber}"
+                                   class="text-decoration-none fw-medium text-info">MO-0001</a>
+                            </td>
+                            <td class="text-truncate" style="max-width:120px" th:text="${order.productName}">—</td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${prodStatusBadge.getOrDefault(order.status, 'bg-secondary')}"
+                                      th:text="${order.status}">PLANNED</span>
+                            </td>
+                            <td class="text-end pe-3 fw-medium"
+                                th:text="${#numbers.formatDecimal(order.plannedQuantity, 0, 'COMMA', 0, 'POINT')}">0</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /row tables -->
+
+    <!-- ══════════════════════════════════════════════════════
+         ROW 5 — QUICK ACTIONS
+         ══════════════════════════════════════════════════════ -->
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 py-3">
+                    <h5 class="mb-0 fw-semibold" th:text="#{dashboard.quickActions}">Quick Actions</h5>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <a th:href="@{/app/sales/orders/new}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="bi bi-plus-circle d-block fs-3 mb-1"></i>
+                                <span th:text="#{dashboard.newSalesOrder}">New Sales Order</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a th:href="@{/app/purchasing/orders/new}" class="btn btn-outline-secondary w-100 py-3">
+                                <i class="bi bi-box-seam d-block fs-3 mb-1"></i>
+                                <span th:text="#{dashboard.newPurchaseOrder}">New Purchase Order</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a th:href="@{/app/production/orders/new}" class="btn btn-outline-info w-100 py-3">
+                                <i class="bi bi-gear-wide-connected d-block fs-3 mb-1"></i>
+                                <span th:text="#{dashboard.newProductionOrder}">New Production Order</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a th:href="@{/app/masterdata/products/new}" class="btn btn-outline-dark w-100 py-3">
+                                <i class="bi bi-watch d-block fs-3 mb-1"></i>
+                                <span th:text="#{dashboard.newProduct}">New Product</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /row quick actions -->
+
+    <!-- ══════════════════════════════════════════════════════
+         CHART.JS — loaded inline, only affects this page
+         ══════════════════════════════════════════════════════ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        (function () {
+            'use strict';
+
+            // ── Revenue Bar Chart ──────────────────────────────────────
+            const revenueRaw = /*[[${monthlyRevenue}]]*/ [];
+            const revLabels  = revenueRaw.map(function (d) { return d.monthLabel; });
+            const revValues  = revenueRaw.map(function (d) { return parseFloat(d.revenue) || 0; });
+
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'bar',
+                data: {
+                    labels: revLabels,
+                    datasets: [{
+                        label: 'CHF',
+                        data: revValues,
+                        backgroundColor: 'rgba(13, 110, 253, 0.65)',
+                        borderColor:     'rgba(13, 110, 253, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    return ' CHF ' + ctx.raw.toLocaleString('de-CH', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: {
+                                callback: function (val) {
+                                    return 'CHF ' + val.toLocaleString('de-CH');
+                                }
+                            }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // ── Status Doughnut Chart ──────────────────────────────────
+            const statusBreakdown = /*[[${salesStatusBreakdown}]]*/ {};
+            const statusLabels    = Object.keys(statusBreakdown);
+            const statusValues    = Object.values(statusBreakdown);
+            const statusColorMap  = {
+                'DRAFT':      '#6c757d',
+                'CONFIRMED':  '#0d6efd',
+                'PROCESSING': '#0dcaf0',
+                'SHIPPED':    '#ffc107',
+                'DELIVERED':  '#198754',
+                'INVOICED':   '#20c997',
+                'COMPLETED':  '#198754',
+                'CANCELLED':  '#dc3545'
+            };
+            const defaultPalette = ['#6c757d','#0d6efd','#0dcaf0','#ffc107','#198754','#20c997','#dc3545','#fd7e14'];
+            const bgColors = statusLabels.map(function (s, i) {
+                return statusColorMap[s] || defaultPalette[i % defaultPalette.length];
+            });
+
+            var statusCanvas = document.getElementById('statusChart');
+            if (statusLabels.length > 0) {
+                new Chart(statusCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: statusLabels,
+                        datasets: [{
+                            data: statusValues,
+                            backgroundColor: bgColors,
+                            borderWidth: 3,
+                            borderColor: '#fff',
+                            hoverOffset: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        cutout: '65%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { boxWidth: 12, padding: 10, font: { size: 12 } }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (ctx) {
+                                        var total = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0);
+                                        var pct   = total > 0 ? Math.round(ctx.raw / total * 100) : 0;
+                                        return ' ' + ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                statusCanvas.style.display = 'none';
+                var msg = document.createElement('p');
+                msg.className = 'text-muted text-center mt-4 mb-0';
+                msg.textContent = 'No orders yet';
+                statusCanvas.parentElement.appendChild(msg);
+            }
+
+        }());
+        /*]]>*/
+    </script>
+
+</div>
+</body>
+</html>
+

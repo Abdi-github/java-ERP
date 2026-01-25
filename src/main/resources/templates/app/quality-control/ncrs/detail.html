@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head><title th:text="${ncr.ncrNumber()}">NCR Detail</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 th:text="${ncr.ncrNumber()}">NCR Detail</h1>
+        <div class="d-flex gap-2">
+            <form th:if="${ncr.status().name() != 'CLOSED'}" th:action="@{/app/quality-control/ncrs/{id}/close(id=${ncr.id()})}" method="post">
+                <button type="submit" class="btn btn-success">Close NCR</button>
+            </form>
+            <a th:href="@{/app/quality-control/ncrs}" class="btn btn-outline-secondary" th:text="#{common.back}">Back</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">NCR Number</dt>
+                        <dd class="col-sm-8" th:text="${ncr.ncrNumber()}"></dd>
+
+                        <dt class="col-sm-4">Quality Check</dt>
+                        <dd class="col-sm-8">
+                            <a th:href="@{/app/quality-control/checks/{id}(id=${ncr.qualityCheckId()})}"
+                               th:text="${ncr.checkNumber()}" class="text-decoration-none"></a>
+                        </dd>
+
+                        <dt class="col-sm-4">Severity</dt>
+                        <dd class="col-sm-8">
+                            <span th:if="${ncr.severity().name() == 'MINOR'}" class="badge bg-info">MINOR</span>
+                            <span th:if="${ncr.severity().name() == 'MAJOR'}" class="badge bg-warning text-dark">MAJOR</span>
+                            <span th:if="${ncr.severity().name() == 'CRITICAL'}" class="badge bg-danger">CRITICAL</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            <span th:if="${ncr.status().name() == 'OPEN'}" class="badge bg-danger">OPEN</span>
+                            <span th:if="${ncr.status().name() == 'IN_PROGRESS'}" class="badge bg-warning text-dark">IN PROGRESS</span>
+                            <span th:if="${ncr.status().name() == 'CLOSED'}" class="badge bg-success">CLOSED</span>
+                        </dd>
+
+                        <dt class="col-sm-4" th:if="${ncr.closedAt() != null}">Closed At</dt>
+                        <dd class="col-sm-8" th:if="${ncr.closedAt() != null}" th:text="${ncr.closedAt()}"></dd>
+
+                        <dt class="col-sm-4">Created</dt>
+                        <dd class="col-sm-8" th:text="${ncr.createdAt()}"></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header fw-bold">Description</div>
+        <div class="card-body" th:text="${ncr.description()}"></div>
+    </div>
+
+    <div class="card" th:if="${ncr.correctiveAction() != null and !ncr.correctiveAction().isBlank()}">
+        <div class="card-header fw-bold">Corrective Action</div>
+        <div class="card-body" th:text="${ncr.correctiveAction()}"></div>
+    </div>
+</div>
+</body>
+</html>
+
