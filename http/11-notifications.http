@@ -1,0 +1,195 @@
+### ============================================================
+### SwiftApp ERP — Notification API (Notifications + Mail Campaigns)
+### IntelliJ HTTP Client
+### Prerequisites: Run 01-auth.http "Login" first
+### ============================================================
+
+### ============================================================
+### Notifications API
+### ============================================================
+
+### ----------------------------------------------------------
+### 1. List my notifications
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/notifications?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List notifications", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+    // Save first notification ID for subsequent tests
+    if (response.body.content && response.body.content.length > 0) {
+        client.global.set("notification_id", response.body.content[0].id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 2. Get notification by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/notifications/{{notification_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get notification", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 3. Get unread count
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/notifications/unread-count
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Unread count", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 4. Mark notification as read
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/notifications/{{notification_id}}/read
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Mark as read", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 5. Mark all notifications as read
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/notifications/read-all
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Mark all read", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 6. Dismiss notification
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/notifications/{{notification_id}}/dismiss
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Dismiss notification", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 7. Notification not found (404)
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/notifications/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Notification not found", function() {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### ============================================================
+### Mail Campaigns API
+### ============================================================
+
+### ----------------------------------------------------------
+### 8. List mail campaigns
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/mail-campaigns?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List campaigns", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 9. Get campaign by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/mail-campaigns/{{campaign_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get campaign", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 10. Create mail campaign
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/mail-campaigns
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "name": "Spring 2026 Collection Launch",
+  "description": "Announce the new Alpine Spring collection to all customers",
+  "templateCode": "product-launch",
+  "locale": "de-CH",
+  "targetSegment": "ALL_CUSTOMERS",
+  "scheduledAt": "2026-04-01T08:00:00Z",
+  "subjectOverride": "Neue Alpine Kollektion Frühling 2026"
+}
+
+> {%
+    client.test("Create campaign", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_campaign_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 11. Queue campaign for sending
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/mail-campaigns/{{test_campaign_id}}/queue
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Queue campaign", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 12. Cancel campaign
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/mail-campaigns
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "name": "Campaign to Cancel",
+  "description": "This campaign will be cancelled",
+  "templateCode": "product-launch",
+  "locale": "en"
+}
+
+> {%
+    if (response.body.id) {
+        client.global.set("cancel_campaign_id", response.body.id);
+    }
+%}
+
+###
+
+POST {{base-url}}/api/v1/mail-campaigns/{{cancel_campaign_id}}/cancel
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Cancel campaign", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+

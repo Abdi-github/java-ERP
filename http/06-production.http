@@ -1,0 +1,297 @@
+### ============================================================
+### SwiftApp ERP — Production API (Production Orders + Work Centers)
+### IntelliJ HTTP Client
+### Prerequisites: Run 01-auth.http "Login" first
+### ============================================================
+
+### ============================================================
+### Work Centers API
+### ============================================================
+
+### ----------------------------------------------------------
+### 1. List work centers
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/work-centers?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List work centers", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 2. Get work center by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/work-centers/{{work_center_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get work center", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 3. Create work center
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/work-centers
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "code": "WC-TEST-01",
+  "name": "Test Assembly Station",
+  "description": "A test work center for API testing",
+  "active": true,
+  "nameTranslations": {
+    "de": "Test-Montagestation",
+    "fr": "Station de montage test",
+    "it": "Stazione di montaggio test",
+    "en": "Test Assembly Station"
+  },
+  "descriptionTranslations": {
+    "de": "Ein Test-Arbeitszentrum",
+    "fr": "Un centre de travail de test",
+    "it": "Un centro di lavoro di test",
+    "en": "A test work center"
+  }
+}
+
+> {%
+    client.test("Create work center", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_work_center_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 4. Update work center
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/work-centers/{{test_work_center_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "code": "WC-TEST-01",
+  "name": "Test Assembly Station — Updated",
+  "description": "Updated work center",
+  "active": true
+}
+
+> {%
+    client.test("Update work center", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 5. Delete work center
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/work-centers/{{test_work_center_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete work center", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+
+### ============================================================
+### Production Orders API
+### ============================================================
+
+### ----------------------------------------------------------
+### 6. List production orders
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/production-orders?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List production orders", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 7. Get production order by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/production-orders/{{production_order_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get production order", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 8. Create production order (with lines)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/production-orders
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "productId": "{{product_id}}",
+  "workCenterId": "{{work_center_id}}",
+  "plannedQuantity": "10.0000",
+  "plannedStartDate": "2026-04-01",
+  "plannedEndDate": "2026-04-15",
+  "priority": 1,
+  "notes": "Batch production of Alpine watches",
+  "lines": [
+    {
+      "materialId": "{{material_id}}",
+      "description": "18K Gold Case",
+      "plannedQuantity": "10.0000",
+      "unitPrice": "850.0000",
+      "position": 1
+    },
+    {
+      "materialId": "{{material_id}}",
+      "description": "Sapphire Crystal",
+      "plannedQuantity": "10.0000",
+      "unitPrice": "45.0000",
+      "position": 2
+    }
+  ]
+}
+
+> {%
+    client.test("Create production order", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_prod_order_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 9. Update production order (DRAFT only)
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/production-orders/{{test_prod_order_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "productId": "{{product_id}}",
+  "workCenterId": "{{work_center_id}}",
+  "plannedQuantity": "15.0000",
+  "plannedStartDate": "2026-04-01",
+  "plannedEndDate": "2026-04-20",
+  "priority": 0,
+  "notes": "Increased batch size"
+}
+
+> {%
+    client.test("Update production order", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 10. Release production order (DRAFT → RELEASED)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/production-orders/{{test_prod_order_id}}/release
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Release production order", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 11. Start production (RELEASED → IN_PROGRESS)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/production-orders/{{test_prod_order_id}}/start
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Start production", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 12. Put on hold (IN_PROGRESS → ON_HOLD)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/production-orders/{{test_prod_order_id}}/hold
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Hold production", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 13. Resume production (ON_HOLD → IN_PROGRESS)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/production-orders/{{test_prod_order_id}}/resume
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Resume production", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 14. Complete production (IN_PROGRESS → COMPLETED)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/production-orders/{{test_prod_order_id}}/complete?actualQuantity=14.0000
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Complete production", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 15. Cancel production order (create new → cancel)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/production-orders
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "productId": "{{product_id}}",
+  "plannedQuantity": "5.0000",
+  "notes": "Order to be cancelled"
+}
+
+> {%
+    if (response.body.id) {
+        client.global.set("cancel_prod_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 16. Cancel the production order
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/production-orders/{{cancel_prod_id}}/cancel?reason=Material+shortage
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Cancel production order", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 17. Delete production order
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/production-orders/{{cancel_prod_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete production order", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+

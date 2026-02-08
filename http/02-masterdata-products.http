@@ -1,0 +1,252 @@
+### ============================================================
+### SwiftApp ERP — Master Data: Products API
+### IntelliJ HTTP Client
+### Prerequisites: Run 01-auth.http "Login" first to set auth_token
+### ============================================================
+
+### ----------------------------------------------------------
+### 1. List products (default pagination)
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/products?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List products", function() {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.content !== undefined, "Should have content array");
+    });
+%}
+
+### ----------------------------------------------------------
+### 2. Search products by name
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/products?search=Alpine&page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Search products", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 3. Get product by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/products/{{product_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get product by ID", function() {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.sku !== undefined, "Should have SKU");
+    });
+%}
+
+### ----------------------------------------------------------
+### 4. Create product
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/products
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "sku": "WCH-TEST-001",
+  "name": "Alpine Test Watch",
+  "description": "A premium Swiss-made test watch for API testing",
+  "categoryId": "{{category_id}}",
+  "unitPrice": "4500.0000",
+  "listPrice": "5200.0000",
+  "vatRate": "STANDARD_8_1",
+  "active": true,
+  "nameTranslations": {
+    "de": "Alpine Test Uhr",
+    "fr": "Montre Alpine Test",
+    "it": "Orologio Alpine Test",
+    "en": "Alpine Test Watch"
+  },
+  "descriptionTranslations": {
+    "de": "Eine Premium Swiss-Made Testuhr",
+    "fr": "Une montre de test Swiss-Made premium",
+    "it": "Un orologio di test Swiss-Made premium",
+    "en": "A premium Swiss-made test watch"
+  }
+}
+
+> {%
+    client.test("Create product", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+        client.assert(response.body.sku === "WCH-TEST-001", "SKU should match");
+    });
+    if (response.body.id) {
+        client.global.set("test_product_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 5. Create product — duplicate SKU (409)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/products
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "sku": "WCH-TEST-001",
+  "name": "Duplicate SKU Product",
+  "unitPrice": "1000.0000",
+  "listPrice": "1200.0000",
+  "vatRate": "STANDARD_8_1",
+  "active": true
+}
+
+> {%
+    client.test("Duplicate SKU rejected", function() {
+        client.assert(response.status === 409, "Expected 409 Conflict");
+    });
+%}
+
+### ----------------------------------------------------------
+### 6. Create product — invalid data (400)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/products
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "sku": "",
+  "name": "",
+  "unitPrice": "-100",
+  "vatRate": "STANDARD_8_1"
+}
+
+> {%
+    client.test("Validation error", function() {
+        client.assert(response.status === 400, "Expected 400 Bad Request");
+    });
+%}
+
+### ----------------------------------------------------------
+### 7. Update product
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/products/{{test_product_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "sku": "WCH-TEST-001",
+  "name": "Alpine Test Watch — Updated",
+  "description": "Updated description for API testing",
+  "unitPrice": "4750.0000",
+  "listPrice": "5500.0000",
+  "vatRate": "STANDARD_8_1",
+  "active": true,
+  "nameTranslations": {
+    "de": "Alpine Test Uhr — Aktualisiert",
+    "fr": "Montre Alpine Test — Mise à jour",
+    "it": "Orologio Alpine Test — Aggiornato",
+    "en": "Alpine Test Watch — Updated"
+  }
+}
+
+> {%
+    client.test("Update product", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 8. Delete product (soft delete)
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/products/{{test_product_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete product", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+
+### ----------------------------------------------------------
+### 9. Get product — not found (404)
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/products/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Product not found", function() {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### ============================================================
+### Bill of Materials (BOM)
+### ============================================================
+
+### ----------------------------------------------------------
+### 10. Get BOM lines for a product
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/products/{{product_id}}/bom
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get BOM", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 11. Add BOM line
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/products/{{product_id}}/bom
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "materialId": "{{material_id}}",
+  "quantity": "2.0000",
+  "unitOfMeasureId": "{{uom_id}}",
+  "position": 1,
+  "notes": "Main case component"
+}
+
+> {%
+    client.test("Add BOM line", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_bom_line_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 12. Update BOM line
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/products/{{product_id}}/bom/{{test_bom_line_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "materialId": "{{material_id}}",
+  "quantity": "3.0000",
+  "unitOfMeasureId": "{{uom_id}}",
+  "position": 1,
+  "notes": "Updated quantity"
+}
+
+> {%
+    client.test("Update BOM line", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 13. Delete BOM line
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/products/{{product_id}}/bom/{{test_bom_line_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete BOM line", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+

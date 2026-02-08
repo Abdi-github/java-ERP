@@ -1,0 +1,320 @@
+### ============================================================
+### SwiftApp ERP — Accounting API (Accounts + Journal Entries)
+### IntelliJ HTTP Client
+### Prerequisites: Run 01-auth.http "Login" first
+### ============================================================
+
+### ============================================================
+### Accounts API (Chart of Accounts)
+### ============================================================
+
+### ----------------------------------------------------------
+### 1. List accounts
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/accounts?page=0&size=20
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List accounts", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 2. Get account by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/accounts/{{account_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get account", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 3. Get account balance
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/accounts/{{account_id}}/balance
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Account balance", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 4. Create account (Asset)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/accounts
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "accountNumber": "1099",
+  "name": "Test Cash Account",
+  "description": "A test asset account for API testing",
+  "accountType": "ASSET",
+  "parentId": null,
+  "active": true
+}
+
+> {%
+    client.test("Create asset account", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_account_asset_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 5. Create account (Revenue)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/accounts
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "accountNumber": "3099",
+  "name": "Test Revenue Account",
+  "description": "A test revenue account",
+  "accountType": "REVENUE",
+  "active": true
+}
+
+> {%
+    client.test("Create revenue account", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_account_revenue_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 6. Create account (Liability — VAT)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/accounts
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "accountNumber": "2099",
+  "name": "Test VAT Payable",
+  "description": "A test liability account for VAT",
+  "accountType": "LIABILITY",
+  "active": true
+}
+
+> {%
+    client.test("Create liability account", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_account_vat_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 7. Update account
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/accounts/{{test_account_asset_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "accountNumber": "1099",
+  "name": "Test Cash Account — Updated",
+  "description": "Updated test account",
+  "accountType": "ASSET",
+  "active": true
+}
+
+> {%
+    client.test("Update account", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 8. Delete account
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/accounts/{{test_account_vat_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete account", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+
+### ============================================================
+### Journal Entries API
+### ============================================================
+
+### ----------------------------------------------------------
+### 9. List journal entries
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/journal-entries?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List journal entries", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 10. Get journal entry by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/journal-entries/{{journal_entry_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get journal entry", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 11. Create journal entry (double-entry: debit = credit)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/journal-entries
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "entryDate": "2026-03-31",
+  "description": "Sale of Alpine Chronograph",
+  "reference": "SO-2026-042",
+  "lines": [
+    {
+      "accountId": "{{test_account_asset_id}}",
+      "description": "Cash received",
+      "debit": "4864.50",
+      "credit": "0.00",
+      "position": 1
+    },
+    {
+      "accountId": "{{test_account_revenue_id}}",
+      "description": "Watch revenue",
+      "debit": "0.00",
+      "credit": "4500.00",
+      "position": 2
+    },
+    {
+      "accountId": "{{test_account_vat_id}}",
+      "description": "VAT 8.1%",
+      "debit": "0.00",
+      "credit": "364.50",
+      "position": 3
+    }
+  ]
+}
+
+> {%
+    client.test("Create journal entry", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_je_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 12. Create unbalanced journal entry — should fail (400)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/journal-entries
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "entryDate": "2026-03-31",
+  "description": "Unbalanced entry",
+  "lines": [
+    {
+      "accountId": "{{test_account_asset_id}}",
+      "description": "Debit only",
+      "debit": "1000.00",
+      "credit": "0.00",
+      "position": 1
+    }
+  ]
+}
+
+> {%
+    client.test("Unbalanced entry rejected", function() {
+        client.assert(response.status === 400 || response.status === 422, "Expected 400/422");
+    });
+%}
+
+### ----------------------------------------------------------
+### 13. Post journal entry (DRAFT → POSTED)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/journal-entries/{{test_je_id}}/post
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Post journal entry", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 14. Reverse posted journal entry
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/journal-entries/{{test_je_id}}/reverse
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Reverse journal entry", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 15. Delete journal entry (DRAFT only — create then delete)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/journal-entries
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "entryDate": "2026-03-31",
+  "description": "Entry to be deleted",
+  "lines": [
+    {
+      "accountId": "{{test_account_asset_id}}",
+      "debit": "100.00",
+      "credit": "0.00",
+      "position": 1
+    },
+    {
+      "accountId": "{{test_account_revenue_id}}",
+      "debit": "0.00",
+      "credit": "100.00",
+      "position": 2
+    }
+  ]
+}
+
+> {%
+    if (response.body.id) {
+        client.global.set("delete_je_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 16. Delete the journal entry
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/journal-entries/{{delete_je_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete journal entry", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+

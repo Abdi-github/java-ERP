@@ -1,0 +1,296 @@
+### ============================================================
+### SwiftApp ERP — Purchasing API (Suppliers + Purchase Orders)
+### IntelliJ HTTP Client
+### Prerequisites: Run 01-auth.http "Login" first
+### ============================================================
+
+### ============================================================
+### Suppliers API
+### ============================================================
+
+### ----------------------------------------------------------
+### 1. List suppliers
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/suppliers?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List suppliers", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 2. Get supplier by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/suppliers/{{supplier_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get supplier", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 3. Create supplier
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/suppliers
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "companyName": "Test Supplier GmbH",
+  "street": "Industriestrasse 15",
+  "country": "CH",
+  "contactPerson": "Max Bauer",
+  "website": "https://test-supplier.ch",
+  "notes": "Premium gold supplier",
+  "active": true
+}
+
+> {%
+    client.test("Create supplier", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_supplier_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 4. Update supplier
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/suppliers/{{test_supplier_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "companyName": "Test Supplier GmbH — Updated",
+  "street": "Industriestrasse 20",
+  "country": "CH",
+  "contactPerson": "Max Bauer Jr.",
+  "active": true
+}
+
+> {%
+    client.test("Update supplier", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 5. Delete supplier
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/suppliers/{{test_supplier_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete supplier", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+
+### ============================================================
+### Purchase Orders API
+### ============================================================
+
+### ----------------------------------------------------------
+### 6. List purchase orders
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/purchase-orders?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List POs", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 7. Get purchase order by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/purchase-orders/{{purchase_order_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get PO", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 8. Create purchase order (with lines)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/purchase-orders
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "supplierId": "{{supplier_id}}",
+  "orderDate": "2026-03-31",
+  "expectedDeliveryDate": "2026-04-15",
+  "notes": "Urgent order — gold sheets needed",
+  "lines": [
+    {
+      "materialId": "{{material_id}}",
+      "description": "18K Gold Sheet",
+      "quantity": "50.0000",
+      "unitPrice": "850.0000",
+      "discountPct": "2.00",
+      "vatRate": "STANDARD_8_1",
+      "position": 1
+    },
+    {
+      "materialId": "{{material_id}}",
+      "description": "Sapphire Crystal",
+      "quantity": "100.0000",
+      "unitPrice": "45.0000",
+      "discountPct": "0.00",
+      "vatRate": "STANDARD_8_1",
+      "position": 2
+    }
+  ]
+}
+
+> {%
+    client.test("Create PO", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_po_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 9. Update purchase order (DRAFT only)
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/purchase-orders/{{test_po_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "supplierId": "{{supplier_id}}",
+  "orderDate": "2026-03-31",
+  "expectedDeliveryDate": "2026-04-20",
+  "notes": "Updated delivery date",
+  "lines": [
+    {
+      "materialId": "{{material_id}}",
+      "description": "18K Gold Sheet",
+      "quantity": "75.0000",
+      "unitPrice": "840.0000",
+      "discountPct": "3.00",
+      "vatRate": "STANDARD_8_1",
+      "position": 1
+    }
+  ]
+}
+
+> {%
+    client.test("Update PO", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 10. Submit PO (DRAFT → SUBMITTED)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/purchase-orders/{{test_po_id}}/submit
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Submit PO", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 11. Confirm PO (SUBMITTED → CONFIRMED)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/purchase-orders/{{test_po_id}}/confirm
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Confirm PO", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 12. Receive PO (CONFIRMED → RECEIVED)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/purchase-orders/{{test_po_id}}/receive
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Receive PO", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 13. Complete PO (RECEIVED → COMPLETED)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/purchase-orders/{{test_po_id}}/complete
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Complete PO", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 14. Cancel PO (create new → cancel)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/purchase-orders
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "supplierId": "{{supplier_id}}",
+  "orderDate": "2026-03-31",
+  "notes": "PO to be cancelled",
+  "lines": [
+    {
+      "materialId": "{{material_id}}",
+      "description": "Test material",
+      "quantity": "10.0000",
+      "unitPrice": "100.0000",
+      "vatRate": "STANDARD_8_1",
+      "position": 1
+    }
+  ]
+}
+
+> {%
+    if (response.body.id) {
+        client.global.set("cancel_po_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 15. Cancel the PO
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/purchase-orders/{{cancel_po_id}}/cancel?reason=No+longer+needed
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Cancel PO", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 16. Delete PO
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/purchase-orders/{{cancel_po_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete PO", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+

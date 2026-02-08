@@ -1,0 +1,356 @@
+### ============================================================
+### SwiftApp ERP — Sales API (Customers + Sales Orders)
+### IntelliJ HTTP Client
+### Prerequisites: Run 01-auth.http "Login" first
+### ============================================================
+
+### ============================================================
+### Customers API
+### ============================================================
+
+### ----------------------------------------------------------
+### 1. List customers
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/customers?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List customers", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 2. Search customers
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/customers?search=Müller&page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Search customers", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 3. Get customer by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/customers/{{customer_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get customer", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 4. Create customer
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/customers
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "customerNumber": "CU-TEST-001",
+  "companyName": "Test AG",
+  "firstName": "Hans",
+  "lastName": "Müller",
+  "email": "hans.mueller@test.ch",
+  "phone": "+41 44 123 45 67",
+  "street": "Bahnhofstrasse 42",
+  "city": "Zürich",
+  "postalCode": "8001",
+  "canton": "ZH",
+  "country": "CH",
+  "vatNumber": "CHE-123.456.789",
+  "paymentTerms": 30,
+  "creditLimit": "50000.0000",
+  "notes": "Premium customer — VIP treatment",
+  "active": true
+}
+
+> {%
+    client.test("Create customer", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_customer_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 5. Create customer — validation error (400)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/customers
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "customerNumber": "",
+  "email": "invalid-email",
+  "paymentTerms": -5
+}
+
+> {%
+    client.test("Customer validation fails", function() {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### ----------------------------------------------------------
+### 6. Update customer
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/customers/{{test_customer_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "customerNumber": "CU-TEST-001",
+  "companyName": "Test AG — Updated",
+  "firstName": "Hans",
+  "lastName": "Müller",
+  "email": "hans.updated@test.ch",
+  "phone": "+41 44 123 45 67",
+  "street": "Bahnhofstrasse 42",
+  "city": "Zürich",
+  "postalCode": "8001",
+  "canton": "ZH",
+  "country": "CH",
+  "paymentTerms": 45,
+  "creditLimit": "75000.0000",
+  "active": true
+}
+
+> {%
+    client.test("Update customer", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 7. Delete customer
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/customers/{{test_customer_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete customer", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+
+### ============================================================
+### Sales Orders API
+### ============================================================
+
+### ----------------------------------------------------------
+### 8. List sales orders
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/sales-orders?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List sales orders", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 9. Get sales order by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/sales-orders/{{sales_order_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get sales order", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 10. Create sales order (with lines)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/sales-orders
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "customerId": "{{customer_id}}",
+  "orderDate": "2026-03-31",
+  "deliveryDate": "2026-04-15",
+  "notes": "Express delivery requested",
+  "shippingStreet": "Bahnhofstrasse 42",
+  "shippingCity": "Zürich",
+  "shippingPostalCode": "8001",
+  "shippingCanton": "ZH",
+  "shippingCountry": "CH",
+  "lines": [
+    {
+      "productId": "{{product_id}}",
+      "description": "Alpine Chronograph",
+      "quantity": "2.0000",
+      "unitPrice": "4500.0000",
+      "discountPct": "5.00",
+      "vatRate": "STANDARD_8_1",
+      "position": 1
+    },
+    {
+      "productId": "{{product_id}}",
+      "description": "Alpine Classic",
+      "quantity": "1.0000",
+      "unitPrice": "3200.0000",
+      "discountPct": "0.00",
+      "vatRate": "STANDARD_8_1",
+      "position": 2
+    }
+  ]
+}
+
+> {%
+    client.test("Create sales order", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_sales_order_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 11. Update sales order (DRAFT only)
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/sales-orders/{{test_sales_order_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "customerId": "{{customer_id}}",
+  "orderDate": "2026-03-31",
+  "deliveryDate": "2026-04-20",
+  "notes": "Updated — standard delivery",
+  "shippingStreet": "Bahnhofstrasse 42",
+  "shippingCity": "Zürich",
+  "shippingPostalCode": "8001",
+  "shippingCanton": "ZH",
+  "shippingCountry": "CH",
+  "lines": [
+    {
+      "productId": "{{product_id}}",
+      "description": "Alpine Chronograph",
+      "quantity": "3.0000",
+      "unitPrice": "4500.0000",
+      "discountPct": "10.00",
+      "vatRate": "STANDARD_8_1",
+      "position": 1
+    }
+  ]
+}
+
+> {%
+    client.test("Update sales order", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 12. Confirm sales order (DRAFT → CONFIRMED)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/sales-orders/{{test_sales_order_id}}/confirm
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Confirm order", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 13. Advance order (CONFIRMED → IN_PRODUCTION)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/sales-orders/{{test_sales_order_id}}/advance
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Advance order", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 14. Advance again (IN_PRODUCTION → SHIPPED)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/sales-orders/{{test_sales_order_id}}/advance
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Advance to shipped", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 15. Advance again (SHIPPED → DELIVERED)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/sales-orders/{{test_sales_order_id}}/advance
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Advance to delivered", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 16. Cancel order (create new one first)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/sales-orders
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "customerId": "{{customer_id}}",
+  "orderDate": "2026-03-31",
+  "notes": "Order to be cancelled",
+  "lines": [
+    {
+      "productId": "{{product_id}}",
+      "description": "Test Product",
+      "quantity": "1.0000",
+      "unitPrice": "1000.0000",
+      "discountPct": "0.00",
+      "vatRate": "STANDARD_8_1",
+      "position": 1
+    }
+  ]
+}
+
+> {%
+    if (response.body.id) {
+        client.global.set("cancel_order_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 17. Cancel the order
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/sales-orders/{{cancel_order_id}}/cancel
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Cancel order", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 18. Delete sales order (DRAFT only)
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/sales-orders/{{cancel_order_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete order", function() {
+        client.assert(response.status === 200 || response.status === 204 || response.status === 400, "Expected success or cannot delete non-draft");
+    });
+%}
+

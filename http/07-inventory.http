@@ -1,0 +1,284 @@
+### ============================================================
+### SwiftApp ERP — Inventory API (Warehouses + Stock)
+### IntelliJ HTTP Client
+### Prerequisites: Run 01-auth.http "Login" first
+### ============================================================
+
+### ============================================================
+### Warehouses API
+### ============================================================
+
+### ----------------------------------------------------------
+### 1. List all warehouses
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/warehouses?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List warehouses", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 2. List active warehouses only
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/warehouses/active
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Active warehouses", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 3. Get warehouse by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/warehouses/{{warehouse_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get warehouse", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 4. Create warehouse
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/warehouses
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "code": "WH-TEST-01",
+  "name": "Test Warehouse Zürich",
+  "description": "A test warehouse for API testing",
+  "address": "Lagerstrasse 10, 8001 Zürich",
+  "active": true,
+  "nameTranslations": {
+    "de": "Testlager Zürich",
+    "fr": "Entrepôt test Zurich",
+    "it": "Magazzino test Zurigo",
+    "en": "Test Warehouse Zurich"
+  },
+  "descriptionTranslations": {
+    "de": "Ein Testlager",
+    "fr": "Un entrepôt de test",
+    "it": "Un magazzino di test",
+    "en": "A test warehouse"
+  }
+}
+
+> {%
+    client.test("Create warehouse", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_warehouse_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 5. Update warehouse
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/warehouses/{{test_warehouse_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "code": "WH-TEST-01",
+  "name": "Test Warehouse Zürich — Updated",
+  "description": "Updated test warehouse",
+  "address": "Lagerstrasse 12, 8001 Zürich",
+  "active": true
+}
+
+> {%
+    client.test("Update warehouse", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 6. Delete warehouse
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/warehouses/{{test_warehouse_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete warehouse", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+
+### ============================================================
+### Stock Levels API
+### ============================================================
+
+### ----------------------------------------------------------
+### 7. Get stock levels for an item (per warehouse)
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/stock/levels/{{material_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Stock levels per WH", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 8. Get all items in a warehouse
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/stock/levels/warehouse/{{warehouse_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Items in warehouse", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 9. Get total stock for an item (across all warehouses)
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/stock/levels/{{material_id}}/total
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Total stock", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 10. Get available stock (total - reserved)
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/stock/levels/{{material_id}}/available
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Available stock", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ============================================================
+### Stock Movements API
+### ============================================================
+
+### ----------------------------------------------------------
+### 11. List all stock movements
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/stock/movements?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List movements", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 12. List movements for specific item
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/stock/movements/item/{{material_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Item movements", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 13. Create INBOUND movement (goods received)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/stock/movements
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "movementType": "INBOUND",
+  "itemId": "{{material_id}}",
+  "itemType": "MATERIAL",
+  "targetWarehouseId": "{{warehouse_id}}",
+  "quantity": "100.0000",
+  "reason": "Purchase order PO-2026-001 received"
+}
+
+> {%
+    client.test("Inbound movement", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+%}
+
+### ----------------------------------------------------------
+### 14. Create OUTBOUND movement (goods shipped)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/stock/movements
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "movementType": "OUTBOUND",
+  "itemId": "{{material_id}}",
+  "itemType": "MATERIAL",
+  "sourceWarehouseId": "{{warehouse_id}}",
+  "quantity": "10.0000",
+  "reason": "Sales order SO-2026-042 shipped"
+}
+
+> {%
+    client.test("Outbound movement", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+%}
+
+### ----------------------------------------------------------
+### 15. Create TRANSFER movement (inter-warehouse)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/stock/movements
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "movementType": "TRANSFER",
+  "itemId": "{{material_id}}",
+  "itemType": "MATERIAL",
+  "sourceWarehouseId": "{{warehouse_id}}",
+  "targetWarehouseId": "{{target_warehouse_id}}",
+  "quantity": "25.0000",
+  "reason": "Transfer to Geneva warehouse"
+}
+
+> {%
+    client.test("Transfer movement", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+%}
+
+### ----------------------------------------------------------
+### 16. Create ADJUSTMENT movement (stock correction)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/stock/movements
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "movementType": "ADJUSTMENT",
+  "itemId": "{{material_id}}",
+  "itemType": "MATERIAL",
+  "targetWarehouseId": "{{warehouse_id}}",
+  "quantity": "5.0000",
+  "reason": "Inventory count correction"
+}
+
+> {%
+    client.test("Adjustment movement", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+%}
+

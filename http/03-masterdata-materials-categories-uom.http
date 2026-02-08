@@ -1,0 +1,345 @@
+### ============================================================
+### SwiftApp ERP — Master Data: Materials, Categories, UoM
+### IntelliJ HTTP Client
+### Prerequisites: Run 01-auth.http "Login" first
+### ============================================================
+
+### ============================================================
+### Materials API
+### ============================================================
+
+### ----------------------------------------------------------
+### 1. List materials
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/materials?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List materials", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 2. Search materials
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/materials?search=gold&page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Search materials", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 3. Get material by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/materials/{{material_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get material", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 4. Create material
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/materials
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "sku": "MAT-GOLD-18K",
+  "name": "18K Gold Sheet",
+  "description": "Premium 18-karat gold for watch cases",
+  "categoryId": "{{category_id}}",
+  "unitOfMeasureId": "{{uom_id}}",
+  "unitPrice": "850.0000",
+  "vatRate": "STANDARD_8_1",
+  "minimumStock": "10.0000",
+  "nameTranslations": {
+    "de": "18K Goldblech",
+    "fr": "Feuille d'or 18K",
+    "it": "Foglio d'oro 18K",
+    "en": "18K Gold Sheet"
+  },
+  "descriptionTranslations": {
+    "de": "Premium 18-Karat Gold für Uhrengehäuse",
+    "fr": "Or 18 carats premium pour boîtiers de montres",
+    "it": "Oro 18 carati premium per casse di orologi",
+    "en": "Premium 18-karat gold for watch cases"
+  }
+}
+
+> {%
+    client.test("Create material", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_material_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 5. Update material
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/materials/{{test_material_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "sku": "MAT-GOLD-18K",
+  "name": "18K Gold Sheet — Updated",
+  "description": "Updated description",
+  "unitPrice": "900.0000",
+  "vatRate": "STANDARD_8_1",
+  "minimumStock": "15.0000"
+}
+
+> {%
+    client.test("Update material", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 6. Delete material
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/materials/{{test_material_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete material", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+
+### ============================================================
+### Categories API
+### ============================================================
+
+### ----------------------------------------------------------
+### 7. List categories (paginated)
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/categories?page=0&size=20
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List categories", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 8. Get root categories
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/categories/roots
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Root categories", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 9. Get flat category list (for dropdowns)
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/categories/flat
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Flat categories", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 10. Get category by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/categories/{{category_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get category", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 11. Create category (root)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/categories
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "name": "Test Category",
+  "description": "A test category for API testing",
+  "parentId": null,
+  "nameTranslations": {
+    "de": "Testkategorie",
+    "fr": "Catégorie de test",
+    "it": "Categoria di test",
+    "en": "Test Category"
+  },
+  "descriptionTranslations": {
+    "de": "Eine Testkategorie",
+    "fr": "Une catégorie de test",
+    "it": "Una categoria di test",
+    "en": "A test category"
+  }
+}
+
+> {%
+    client.test("Create category", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_category_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 12. Create sub-category
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/categories
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "name": "Test Sub-Category",
+  "description": "A child category",
+  "parentId": "{{test_category_id}}",
+  "nameTranslations": {
+    "de": "Test-Unterkategorie",
+    "en": "Test Sub-Category"
+  }
+}
+
+> {%
+    client.test("Create sub-category", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+%}
+
+### ----------------------------------------------------------
+### 13. Update category
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/categories/{{test_category_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "name": "Test Category — Updated",
+  "description": "Updated test category"
+}
+
+> {%
+    client.test("Update category", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 14. Delete category
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/categories/{{test_category_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete category", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+
+### ============================================================
+### Units of Measure API
+### ============================================================
+
+### ----------------------------------------------------------
+### 15. List units of measure
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/units-of-measure?page=0&size=20
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List UoM", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 16. Get unit by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/units-of-measure/{{uom_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get UoM", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 17. Create unit of measure
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/units-of-measure
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "code": "TST",
+  "name": "Test Unit",
+  "description": "A test unit of measure",
+  "nameTranslations": {
+    "de": "Testeinheit",
+    "fr": "Unité de test",
+    "it": "Unità di test",
+    "en": "Test Unit"
+  }
+}
+
+> {%
+    client.test("Create UoM", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_uom_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 18. Update unit of measure
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/units-of-measure/{{test_uom_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "code": "TST",
+  "name": "Test Unit — Updated",
+  "description": "Updated test unit"
+}
+
+> {%
+    client.test("Update UoM", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 19. Delete unit of measure
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/units-of-measure/{{test_uom_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete UoM", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+

@@ -1,0 +1,339 @@
+### ============================================================
+### SwiftApp ERP — Quality Control API
+### (Inspection Plans + Quality Checks + NCRs)
+### IntelliJ HTTP Client
+### Prerequisites: Run 01-auth.http "Login" first
+### ============================================================
+
+### ============================================================
+### Inspection Plans API
+### ============================================================
+
+### ----------------------------------------------------------
+### 1. List inspection plans
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/inspection-plans?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List inspection plans", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 2. Search inspection plans
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/inspection-plans?search=case&page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Search inspection plans", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 3. Get inspection plan by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/inspection-plans/{{inspection_plan_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get inspection plan", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 4. Create inspection plan (for a product)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/inspection-plans
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "planNumber": "IP-TEST-001",
+  "name": "Alpine Chronograph Final QC",
+  "description": "Final quality check for Alpine Chronograph watches — timing accuracy, water resistance, visual inspection",
+  "productId": "{{product_id}}",
+  "materialId": null,
+  "active": true
+}
+
+> {%
+    client.test("Create inspection plan", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_inspection_plan_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 5. Create inspection plan (for a material)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/inspection-plans
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "planNumber": "IP-TEST-002",
+  "name": "Gold Purity Test",
+  "description": "Incoming material quality check — verify 18K gold purity and weight",
+  "productId": null,
+  "materialId": "{{material_id}}",
+  "active": true
+}
+
+> {%
+    client.test("Create material inspection plan", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+%}
+
+### ----------------------------------------------------------
+### 6. Update inspection plan
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/inspection-plans/{{test_inspection_plan_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "planNumber": "IP-TEST-001",
+  "name": "Alpine Chronograph Final QC — Updated",
+  "description": "Updated: includes new water resistance depth test",
+  "productId": "{{product_id}}",
+  "active": true
+}
+
+> {%
+    client.test("Update inspection plan", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 7. Delete inspection plan
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/inspection-plans/{{test_inspection_plan_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete inspection plan", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+
+### ============================================================
+### Quality Checks API
+### ============================================================
+
+### ----------------------------------------------------------
+### 8. List quality checks
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/quality-checks?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List quality checks", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 9. Get quality check by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/quality-checks/{{quality_check_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get quality check", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 10. Record quality check — PASS
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/quality-checks
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "inspectionPlanId": "{{inspection_plan_id}}",
+  "productionOrderId": "{{production_order_id}}",
+  "checkedBy": "Max Schneider",
+  "checkDate": "2026-03-31",
+  "result": "PASS",
+  "notes": "All parameters within specification. Timing accuracy ±2s/day."
+}
+
+> {%
+    client.test("Record PASS check", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+%}
+
+### ----------------------------------------------------------
+### 11. Record quality check — FAIL
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/quality-checks
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "inspectionPlanId": "{{inspection_plan_id}}",
+  "productionOrderId": "{{production_order_id}}",
+  "checkedBy": "Lisa Weber",
+  "checkDate": "2026-03-31",
+  "result": "FAIL",
+  "notes": "Water resistance test failed at 50m. Crown seal defective."
+}
+
+> {%
+    client.test("Record FAIL check", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("failed_check_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 12. Record quality check — CONDITIONAL
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/quality-checks
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "inspectionPlanId": "{{inspection_plan_id}}",
+  "productionOrderId": "{{production_order_id}}",
+  "checkedBy": "Max Schneider",
+  "checkDate": "2026-03-31",
+  "result": "CONDITIONAL",
+  "notes": "Minor scratch on case back — polishing required before shipping."
+}
+
+> {%
+    client.test("Record CONDITIONAL check", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+%}
+
+### ============================================================
+### Non-Conformance Reports (NCR) API
+### ============================================================
+
+### ----------------------------------------------------------
+### 13. List NCRs
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/ncrs?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List NCRs", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 14. List NCRs — filter by OPEN status
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/ncrs?status=OPEN&page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List open NCRs", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 15. Get NCR by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/ncrs/{{ncr_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get NCR", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 16. Create NCR — HIGH severity
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/ncrs
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "qualityCheckId": "{{failed_check_id}}",
+  "severity": "HIGH",
+  "description": "Water resistance test failed at 50m depth. Crown seal shows visible damage. Batch WCH-2026-042 affected.",
+  "correctiveAction": "Replace crown seals for entire batch. Re-test all units."
+}
+
+> {%
+    client.test("Create HIGH NCR", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_ncr_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 17. Create NCR — CRITICAL severity
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/ncrs
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "qualityCheckId": "{{failed_check_id}}",
+  "severity": "CRITICAL",
+  "description": "Movement calibration off by >30s/day. Potential systemic issue in assembly station WC-ASSEMBLY-01.",
+  "correctiveAction": "Quarantine all units from WC-ASSEMBLY-01. Full recalibration required."
+}
+
+> {%
+    client.test("Create CRITICAL NCR", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+%}
+
+### ----------------------------------------------------------
+### 18. Create NCR — LOW severity
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/ncrs
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "qualityCheckId": "{{failed_check_id}}",
+  "severity": "LOW",
+  "description": "Minor cosmetic imperfection on dial — barely visible.",
+  "correctiveAction": "Polish and re-inspect."
+}
+
+> {%
+    client.test("Create LOW NCR", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+%}
+
+### ----------------------------------------------------------
+### 19. Close NCR (corrective action completed)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/ncrs/{{test_ncr_id}}/close
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Close NCR", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+

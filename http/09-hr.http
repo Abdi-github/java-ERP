@@ -1,0 +1,239 @@
+### ============================================================
+### SwiftApp ERP — HR API (Employees + Departments)
+### IntelliJ HTTP Client
+### Prerequisites: Run 01-auth.http "Login" first
+### ============================================================
+
+### ============================================================
+### Departments API
+### ============================================================
+
+### ----------------------------------------------------------
+### 1. List departments
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/departments?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List departments", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 2. Get department by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/departments/{{department_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get department", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 3. Create department
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/departments
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "name": "Test Department",
+  "description": "A test department for API testing",
+  "managerId": null,
+  "active": true,
+  "nameTranslations": {
+    "de": "Testabteilung",
+    "fr": "Département de test",
+    "it": "Dipartimento di test",
+    "en": "Test Department"
+  },
+  "descriptionTranslations": {
+    "de": "Eine Testabteilung",
+    "fr": "Un département de test",
+    "it": "Un dipartimento di test",
+    "en": "A test department"
+  }
+}
+
+> {%
+    client.test("Create department", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_department_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 4. Update department
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/departments/{{test_department_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "name": "Test Department — Updated",
+  "description": "Updated description",
+  "active": true
+}
+
+> {%
+    client.test("Update department", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 5. Delete department
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/departments/{{test_department_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete department", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+
+### ============================================================
+### Employees API
+### ============================================================
+
+### ----------------------------------------------------------
+### 6. List employees
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/employees?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List employees", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 7. Search employees
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/employees?search=Müller&page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Search employees", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 8. Get employee by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/employees/{{employee_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get employee", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 9. Create employee
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/employees
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "employeeNumber": "EMP-TEST-001",
+  "firstName": "Anna",
+  "lastName": "Meier",
+  "email": "anna.meier@swiftapp.ch",
+  "phone": "+41 79 123 45 67",
+  "hireDate": "2026-04-01",
+  "departmentId": "{{department_id}}",
+  "position": "Watchmaker",
+  "salary": "85000.0000",
+  "active": true
+}
+
+> {%
+    client.test("Create employee", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_employee_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 10. Create employee — validation error (400)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/employees
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "employeeNumber": "",
+  "firstName": "",
+  "lastName": "",
+  "hireDate": null
+}
+
+> {%
+    client.test("Employee validation fails", function() {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### ----------------------------------------------------------
+### 11. Update employee
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/employees/{{test_employee_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "employeeNumber": "EMP-TEST-001",
+  "firstName": "Anna",
+  "lastName": "Meier-Schultz",
+  "email": "anna.meier@swiftapp.ch",
+  "phone": "+41 79 123 45 67",
+  "hireDate": "2026-04-01",
+  "departmentId": "{{department_id}}",
+  "position": "Senior Watchmaker",
+  "salary": "95000.0000",
+  "active": true
+}
+
+> {%
+    client.test("Update employee", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 12. Terminate employee
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/employees/{{test_employee_id}}/terminate
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Terminate employee", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 13. Delete employee
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/employees/{{test_employee_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete employee", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+

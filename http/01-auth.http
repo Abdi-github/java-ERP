@@ -1,0 +1,275 @@
+### ============================================================
+### SwiftApp ERP — Authentication API
+### IntelliJ HTTP Client
+### ============================================================
+
+### ----------------------------------------------------------
+### 1. Login — Success (get JWT token)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{admin-username}}",
+  "password": "{{admin-password}}"
+}
+
+> {%
+    client.test("Login successful", function() {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.token !== null, "Token should not be null");
+    });
+    client.global.set("auth_token", response.body.token);
+%}
+
+### ----------------------------------------------------------
+### 2. Login — Invalid credentials (401)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "wrong_password"
+}
+
+> {%
+    client.test("Login fails with wrong password", function() {
+        client.assert(response.status === 401, "Expected 401 Unauthorized");
+    });
+%}
+
+### ----------------------------------------------------------
+### 3. Login — Missing fields (400)
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "",
+  "password": ""
+}
+
+> {%
+    client.test("Login fails with empty fields", function() {
+        client.assert(response.status === 400 || response.status === 401, "Expected 400 or 401");
+    });
+%}
+
+### ============================================================
+### Users API
+### ============================================================
+
+### ----------------------------------------------------------
+### 4. List all users (paginated)
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/users?page=0&size=10
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List users", function() {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.content !== undefined, "Should return paged content");
+    });
+%}
+
+### ----------------------------------------------------------
+### 5. Get user by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/users/{{user_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get user by ID", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 6. Create a new user
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/users
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "username": "test.user",
+  "email": "test.user@swiftapp.ch",
+  "password": "SecurePass123!",
+  "firstName": "Test",
+  "lastName": "User",
+  "enabled": true,
+  "roleNames": ["ROLE_USER"]
+}
+
+> {%
+    client.test("Create user", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_user_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 7. Update user
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/users/{{test_user_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "username": "test.user.updated",
+  "email": "test.updated@swiftapp.ch",
+  "firstName": "Test",
+  "lastName": "Updated",
+  "enabled": true,
+  "roleNames": ["ROLE_USER"]
+}
+
+> {%
+    client.test("Update user", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 8. Delete user
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/users/{{test_user_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete user", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+
+### ----------------------------------------------------------
+### 9. Get user — not found (404)
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/users/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("User not found", function() {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### ----------------------------------------------------------
+### 10. Access without token (401)
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/users
+
+> {%
+    client.test("Unauthorized without token", function() {
+        client.assert(response.status === 401, "Expected 401");
+    });
+%}
+
+### ============================================================
+### Roles API
+### ============================================================
+
+### ----------------------------------------------------------
+### 11. List all roles
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/roles
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List roles", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 12. Get role by ID
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/roles/{{role_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Get role by ID", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 13. Create role
+### ----------------------------------------------------------
+POST {{base-url}}/api/v1/roles
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "name": "ROLE_TEST",
+  "description": "Test role for API testing",
+  "permissionIds": []
+}
+
+> {%
+    client.test("Create role", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+    if (response.body.id) {
+        client.global.set("test_role_id", response.body.id);
+    }
+%}
+
+### ----------------------------------------------------------
+### 14. Update role
+### ----------------------------------------------------------
+PUT {{base-url}}/api/v1/roles/{{test_role_id}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "name": "ROLE_TEST_UPDATED",
+  "description": "Updated test role",
+  "permissionIds": []
+}
+
+> {%
+    client.test("Update role", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 15. Delete role
+### ----------------------------------------------------------
+DELETE {{base-url}}/api/v1/roles/{{test_role_id}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Delete role", function() {
+        client.assert(response.status === 200 || response.status === 204, "Expected 200/204");
+    });
+%}
+
+### ----------------------------------------------------------
+### 16. List all permissions
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/roles/permissions
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("List permissions", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### ----------------------------------------------------------
+### 17. List permissions grouped by module
+### ----------------------------------------------------------
+GET {{base-url}}/api/v1/roles/permissions/grouped
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Permissions grouped", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
