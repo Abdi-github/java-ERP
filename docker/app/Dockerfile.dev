@@ -1,0 +1,50 @@
+# ──────────────────────────────────────────────────────────
+# SwiftApp ERP — Development Dockerfile (Hot-Reload)
+# ──────────────────────────────────────────────────────────
+# Used with `docker compose up -d` (all services start by default)
+# The entire project is mounted as a volume for live changes:
+#   - Thymeleaf templates, CSS, JS, i18n  → instant reload
+#   - Java source changes                 → devtools auto-restart (~3-5s)
+# ──────────────────────────────────────────────────────────
+FROM eclipse-temurin:21-jdk
+
+LABEL maintainer="SwiftApp ERP <dev@swiftapp.ch>"
+LABEL description="SwiftApp ERP — Development with Hot-Reload"
+
+# ── Install utilities ─────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
+        tzdata \
+    && ln -sf /usr/share/zoneinfo/Europe/Zurich /etc/localtime \
+    && echo "Europe/Zurich" > /etc/timezone \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# ── Pre-download Maven wrapper and dependencies ──────────
+# These layers are cached; only re-runs if pom.xml changes
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
+RUN chmod +x mvnw \
+    && ./mvnw dependency:go-offline -B -q
+
+# ── Source code is mounted at runtime (not copied) ───────
+# See compose.yaml volumes section
+
+EXPOSE 8080
+
+# ── JVM flags for development ─────────────────────────────
+ENV MAVEN_OPTS="-XX:+UseContainerSupport \
+    -XX:MaxRAMPercentage=75.0 \
+    -Dspring.devtools.restart.enabled=true \
+    -Dspring.devtools.livereload.enabled=true \
+    -Duser.timezone=Europe/Zurich"
+
+# ── Health check ──────────────────────────────────────────
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+    CMD curl -sf http://localhost:8080/actuator/health || exit 1
+
+# ── Run Spring Boot with Maven (devtools active) ─────────
+ENTRYPOINT ["./mvnw", "spring-boot:run", \
+    "-Dspring-boot.run.jvmArguments=-Dspring.devtools.restart.enabled=true -Dspring.devtools.restart.poll-interval=2s -Dspring.devtools.restart.quiet-period=1s"]
+

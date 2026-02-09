@@ -1,0 +1,50 @@
+# ──────────────────────────────────────────────────────────
+# SwiftApp ERP — Docker Build Context Exclusions
+# ──────────────────────────────────────────────────────────
+
+# Build artifacts (we build inside Docker)
+target/
+
+# Version control
+.git/
+.gitignore
+
+# IDE files
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+
+# Documentation (not needed in image)
+docs/
+*.md
+LICENSE
+
+# Docker files (avoid recursive context)
+docker/
+compose.yaml
+compose.prod.yaml
+.dockerignore
+
+# Environment & secrets
+.env
+.env.*
+
+# Test sources (not needed in production image)
+src/test/
+
+# CI/CD
+.github/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Maven wrapper JAR (we use the script + download)
+.mvn/wrapper/maven-wrapper.jar
+

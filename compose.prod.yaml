@@ -1,0 +1,142 @@
+# ──────────────────────────────────────────────────────────
+# SwiftApp ERP — Production Docker Compose
+# ──────────────────────────────────────────────────────────
+# Full stack: App + Database + Nginx reverse proxy.
+# All services containerized and hardened.
+#
+# Usage:
+#   docker compose -f compose.prod.yaml --env-file .env.prod up -d --build
+#   docker compose -f compose.prod.yaml --env-file .env.prod down
+#   docker compose -f compose.prod.yaml --env-file .env.prod logs -f app
+# ──────────────────────────────────────────────────────────
+
+services:
+
+  # ── Spring Boot Application ─────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: swiftapp-erp-app
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      # Database
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-swiftapp_erp}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-erp_admin}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      # JPA
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      # Flyway
+      SPRING_FLYWAY_ENABLED: "true"
+      # Mail
+      SPRING_MAIL_HOST: ${MAIL_HOST}
+      SPRING_MAIL_PORT: ${MAIL_PORT:-587}
+      SPRING_MAIL_USERNAME: ${MAIL_USERNAME:-}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      # JWT
+      APP_JWT_SECRET: ${JWT_SECRET}
+      APP_JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      # Mail sender
+      APP_MAIL_FROM: ${MAIL_FROM:-noreply@swiftapp.ch}
+      # Thymeleaf (cache ON in prod)
+      SPRING_THYMELEAF_CACHE: "true"
+      # Actuator
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics
+      # Logging (less verbose in prod)
+      LOGGING_LEVEL_CH_SWIFTAPP_ERP: INFO
+      LOGGING_LEVEL_ORG_HIBERNATE_SQL: WARN
+      # Disable Docker Compose auto-detection in prod
+      SPRING_DOCKER_COMPOSE_ENABLED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+      - frontend
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1536M
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    restart: unless-stopped
+
+  # ── PostgreSQL 17 (Alpine — smaller image) ──────────────
+  postgres:
+    image: postgres:17-alpine
+    container_name: swiftapp-erp-db-prod
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-swiftapp_erp}
+      POSTGRES_USER: ${POSTGRES_USER:-erp_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-erp_admin} -d ${POSTGRES_DB:-swiftapp_erp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - backend
+    # Database NOT exposed to host — only reachable from backend network
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1024M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    restart: unless-stopped
+
+  # ── Nginx Reverse Proxy ─────────────────────────────────
+  nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    container_name: swiftapp-erp-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - frontend
+    volumes:
+      - nginx_logs:/var/log/nginx
+      # Uncomment for SSL with Let's Encrypt:
+      # - /etc/letsencrypt:/etc/letsencrypt:ro
+      # - certbot_webroot:/var/www/certbot:ro
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+    restart: unless-stopped
+
+networks:
+  backend:
+    driver: bridge
+    name: swiftapp-backend
+  frontend:
+    driver: bridge
+    name: swiftapp-frontend
+
+volumes:
+  pgdata_prod:
+    driver: local
+    name: swiftapp-erp-pgdata-prod
+  nginx_logs:
+    driver: local
+    name: swiftapp-erp-nginx-logs
+  # Uncomment for SSL with Let's Encrypt:
+  # certbot_webroot:
+  #   driver: local
+
