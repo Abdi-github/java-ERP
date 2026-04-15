@@ -18,6 +18,9 @@ services:
       context: .
       dockerfile: docker/app/Dockerfile
     container_name: java-erp-app
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=erp-java"
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       # Database
@@ -53,6 +56,12 @@ services:
     networks:
       - backend
       - frontend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
     deploy:
       resources:
         limits:
@@ -67,6 +76,9 @@ services:
   postgres:
     image: postgres:17-alpine
     container_name: java-erp-db-prod
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=erp-java"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-swiftapp_erp}
       POSTGRES_USER: ${POSTGRES_USER:-erp_admin}
@@ -111,10 +123,14 @@ services:
       # - certbot_webroot:/var/www/certbot:ro
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.allownonrunning=true"
       - "traefik.http.routers.erp-java.rule=Host(`erp-java.swiftapp.ch`)"
       - "traefik.http.routers.erp-java.entrypoints=websecure"
       - "traefik.http.routers.erp-java.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.erp-java.middlewares=sablier-erp-java@file"
       - "traefik.http.services.erp-java.loadbalancer.server.port=80"
+      - "sablier.enable=true"
+      - "sablier.group=erp-java"
     deploy:
       resources:
         limits:
