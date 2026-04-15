@@ -93,7 +93,7 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport \
 
 # ── Health check ──
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -sf http://localhost:8080/actuator/health || exit 1
+    CMD curl -sf http://127.0.0.1:8080/actuator/health || exit 1
 
 # ── Entrypoint ──
 ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} org.springframework.boot.loader.launch.JarLauncher"]

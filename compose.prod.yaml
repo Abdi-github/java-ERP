@@ -17,7 +17,7 @@ services:
     build:
       context: .
       dockerfile: docker/app/Dockerfile
-    container_name: swiftapp-erp-app
+    container_name: java-erp-app
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       # Database
@@ -56,17 +56,17 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: 1536M
-        reservations:
-          cpus: "0.5"
+          cpus: "1.0"
           memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
     restart: unless-stopped
 
   # ── PostgreSQL 17 (Alpine — smaller image) ──────────────
   postgres:
     image: postgres:17-alpine
-    container_name: swiftapp-erp-db-prod
+    container_name: java-erp-db-prod
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-swiftapp_erp}
       POSTGRES_USER: ${POSTGRES_USER:-erp_admin}
@@ -85,11 +85,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 1024M
-        reservations:
-          cpus: "0.25"
+          cpus: "0.5"
           memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 128M
     restart: unless-stopped
 
   # ── Nginx Reverse Proxy ─────────────────────────────────
@@ -97,7 +97,7 @@ services:
     build:
       context: ./docker/nginx
       dockerfile: Dockerfile
-    container_name: swiftapp-erp-nginx
+    container_name: java-erp-nginx
     depends_on:
       app:
         condition: service_healthy
@@ -119,7 +119,7 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 256M
+          memory: 128M
         reservations:
           cpus: "0.1"
           memory: 64M
@@ -128,20 +128,20 @@ services:
 networks:
   backend:
     driver: bridge
-    name: swiftapp-backend
+    name: java-erp-backend
   frontend:
     driver: bridge
-    name: swiftapp-frontend
+    name: java-erp-frontend
   traefik:
     external: true
 
 volumes:
   pgdata_prod:
     driver: local
-    name: swiftapp-erp-pgdata-prod
+    name: java-erp-pgdata-prod
   nginx_logs:
     driver: local
-    name: swiftapp-erp-nginx-logs
+    name: java-erp-nginx-logs
   # Uncomment for SSL with Let's Encrypt:
   # certbot_webroot:
   #   driver: local
