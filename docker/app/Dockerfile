@@ -33,17 +33,7 @@ RUN ./mvnw package -DskipTests -B -q \
 # ════════════════════════════════════════════════════════════
 # STAGE 2 — Layers: Extract Spring Boot layered JAR
 # ════════════════════════════════════════════════════════════
-FROM eclipse-temurin:21-jdk AS layers
-
-WORKDIR /extract
-
-COPY --from=builder /build/target/app.jar app.jar
-
-# Extract layers for optimal Docker caching
-RUN java -Djarmode=tools -jar app.jar extract --layers --destination extracted
-
-# ════════════════════════════════════════════════════════════
-# STAGE 3 — Runtime: Minimal JRE image
+# STAGE 2 — Runtime: Minimal JRE image
 # ════════════════════════════════════════════════════════════
 FROM eclipse-temurin:21-jre-alpine AS runtime
 
@@ -65,15 +55,8 @@ RUN addgroup -g 1000 -S appgroup \
 # ── Application directory ──
 WORKDIR /app
 
-# ── Copy extracted layers (ordered by change frequency) ──
-# Layer 1: External dependencies (rarely changes)
-COPY --from=layers /extract/extracted/dependencies/ ./
-# Layer 2: Spring Boot loader (rarely changes)
-COPY --from=layers /extract/extracted/spring-boot-loader/ ./
-# Layer 3: Snapshot dependencies (occasionally changes)
-COPY --from=layers /extract/extracted/snapshot-dependencies/ ./
-# Layer 4: Application code (changes every build)
-COPY --from=layers /extract/extracted/application/ ./
+# ── Copy application JAR ──
+COPY --from=builder /build/target/app.jar ./app.jar
 
 # ── Set ownership ──
 RUN chown -R appuser:appgroup /app
@@ -92,9 +75,9 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport \
     -Duser.timezone=Europe/Zurich"
 
 # ── Health check ──
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start_period=60s --retries=3 \
     CMD curl -sf http://127.0.0.1:8080/actuator/health || exit 1
 
 # ── Entrypoint ──
-ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} org.springframework.boot.loader.launch.JarLauncher"]
+ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -jar app.jar"]
 
