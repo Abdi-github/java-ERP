@@ -98,19 +98,23 @@ services:
       context: ./docker/nginx
       dockerfile: Dockerfile
     container_name: swiftapp-erp-nginx
-    ports:
-      - "80:80"
-      - "443:443"
     depends_on:
       app:
         condition: service_healthy
     networks:
       - frontend
+      - traefik
     volumes:
       - nginx_logs:/var/log/nginx
       # Uncomment for SSL with Let's Encrypt:
       # - /etc/letsencrypt:/etc/letsencrypt:ro
       # - certbot_webroot:/var/www/certbot:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.erp-java.rule=Host(`erp-java.swiftapp.ch`)"
+      - "traefik.http.routers.erp-java.entrypoints=websecure"
+      - "traefik.http.routers.erp-java.tls.certresolver=letsencrypt"
+      - "traefik.http.services.erp-java.loadbalancer.server.port=80"
     deploy:
       resources:
         limits:
@@ -128,6 +132,8 @@ networks:
   frontend:
     driver: bridge
     name: swiftapp-frontend
+  traefik:
+    external: true
 
 volumes:
   pgdata_prod:
