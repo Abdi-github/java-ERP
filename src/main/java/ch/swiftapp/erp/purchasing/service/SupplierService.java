@@ -65,11 +65,6 @@ public class SupplierService {
         }
         
         supplier = supplierRepository.save(supplier);
-        rNumberIgnoreCase(supplier.getSupplierNumber())) {
-            throw new IllegalArgumentException("Supplier number already exists: " + supplier.getSupplierNumber());
-        }
-        
-        supplier = supplierRepository.save(supplier);
         
         log.info("Created supplier id={} number={}", supplier.getId(), supplier.getSupplierNumber());
         return toResponse(supplier);
