@@ -75,7 +75,7 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport \
     -Duser.timezone=Europe/Zurich"
 
 # ── Health check ──
-HEALTHCHECK --interval=30s --timeout=10s --start_period=60s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -sf http://127.0.0.1:8080/actuator/health || exit 1
 
 # ── Entrypoint ──
