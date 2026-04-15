@@ -176,7 +176,6 @@ public class UserService {
         
         userRepository.save(user);
     }
-    }
 
     /**
      * Find all enabled, non-deleted, non-locked users.
